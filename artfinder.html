@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Almanach">
+<meta name="theme-color" content="#c9a84c">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Almanach Pána Starožitníka</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Outfit:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #0f0e0c;
+  --surface: #1a1814;
+  --surface2: #242018;
+  --surface3: #2e2a22;
+  --gold: #c9a84c;
+  --gold2: #e8c97a;
+  --cream: #f5f0e8;
+  --muted: #7a7060;
+  --red: #c0392b;
+  --green: #27ae60;
+  --border: rgba(201,168,76,0.15);
+  --border2: rgba(201,168,76,0.3);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* ── HEADER ── */
+.header {
+  position: relative;
+  z-index: 10;
+  padding: 1.5rem 1.2rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(180deg, rgba(15,14,12,0.98) 0%, transparent 100%);
+}
+
+.header-logo {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 20px rgba(201,168,76,0.3);
+}
+
+.header-text h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--gold2), var(--cream));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+
+.header-text p {
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── TABS ── */
+.tabs {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  flex: 1;
+  min-width: 80px;
+  padding: 0.9rem 0.5rem;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  transition: color 0.2s;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+.tab-icon { font-size: 1.2rem; }
+
+/* ── PAGES ── */
+.page { display: none; position: relative; z-index: 1; }
+.page.active { display: block; }
+
+/* ── SECTION CARD ── */
+.section-card {
+  margin: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.2rem;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  color: var(--gold2);
+  margin-bottom: 0.3rem;
+}
+
+.section-sub {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+/* ── INPUTS ── */
+.input-row {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.art-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  color: var(--cream);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.art-input::placeholder { color: var(--muted); }
+.art-input:focus { border-color: var(--gold); }
+
+.btn {
+  padding: 0.8rem 1rem;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+}
+.btn:active { transform: scale(0.96); }
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  color: #1a1408;
+  box-shadow: 0 4px 16px rgba(201,168,76,0.3);
+}
+.btn-gold:hover { box-shadow: 0 6px 22px rgba(201,168,76,0.45); transform: translateY(-1px); }
+
+.btn-outline {
+  background: var(--surface2);
+  color: var(--cream);
+  border: 1.5px solid var(--border2);
+}
+.btn-outline:hover { border-color: var(--gold); }
+
+.btn-full {
+  width: 100%;
+  justify-content: center;
+  padding: 0.9rem;
+}
+
+/* ── STRÁNKY GRID ── */
+.sites-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.site-btn {
+  padding: 0.7rem 0.6rem;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  color: var(--cream);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+.site-btn:hover { border-color: var(--gold); background: var(--surface3); }
+.site-btn .site-icon { font-size: 1rem; }
+.site-btn .site-name { font-weight: 600; }
+.site-btn .site-type { font-size: 0.68rem; color: var(--muted); display: block; }
+
+.btn-open-all {
+  width: 100%;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a3a2a, #0f2a1a);
+  color: #4ade80;
+  border: 1.5px solid rgba(74,222,128,0.2);
+  padding: 0.9rem;
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+.btn-open-all:hover { border-color: rgba(74,222,128,0.5); transform: translateY(-1px); }
+
+/* ── MANUÁLNA TABUĽKA ── */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.badge {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.72rem;
+  color: var(--gold);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 500px;
+  font-size: 0.78rem;
+}
+
+thead tr {
+  background: var(--surface3);
+}
+
+th {
+  padding: 0.7rem 0.8rem;
+  text-align: left;
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+td {
+  padding: 0.65rem 0.8rem;
+  border-top: 1px solid var(--border);
+  color: var(--cream);
+  vertical-align: middle;
+}
+
+tr:hover td { background: var(--surface2); }
+
+.td-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--surface3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.td-link {
+  color: var(--gold);
+  text-decoration: none;
+  font-size: 0.72rem;
+}
+.td-link:hover { text-decoration: underline; }
+
+.td-price {
+  font-weight: 600;
+  color: var(--gold2);
+  white-space: nowrap;
+}
+
+.td-source {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+}
+
+.td-delete {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.2rem;
+  border-radius: 6px;
+  transition: color 0.2s;
+}
+.td-delete:hover { color: var(--red); }
+
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--muted);
+}
+.empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.4; }
+.empty-text { font-size: 0.82rem; }
+
+/* ── PRIDAŤ ZÁZNAM ── */
+.add-form {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+  margin-top: 0.8rem;
+  display: none;
+}
+.add-form.open { display: block; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.form-group.full { grid-column: 1 / -1; }
+
+.form-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── KAMERA STRÁNKA ── */
+.camera-zone {
+  margin: 1rem;
+  background: var(--surface);
+  border: 1.5px dashed var(--border2);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: border-color 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.camera-zone.has-img { border-style: solid; padding: 0; }
+.camera-zone:hover { border-color: var(--gold); }
+
+#cam-preview {
+  display: none;
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 18px;
+}
+.camera-zone.has-img #cam-preview { display: block; }
+.camera-zone.has-img .cam-placeholder { display: none; }
+
+.cam-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  pointer-events: none;
+}
+.cam-icon { font-size: 3rem; opacity: 0.4; }
+.cam-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  color: var(--cream);
+  opacity: 0.6;
+}
+.cam-sub { font-size: 0.75rem; color: var(--muted); }
+
+.btn-clear-cam {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+.camera-zone.has-img .btn-clear-cam { display: flex; }
+
+.cam-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin: 0 1rem;
+}
+
+#lens-search-btn {
+  margin: 0.5rem 1rem 1rem;
+  display: none;
+}
+#lens-search-btn.visible { display: flex; }
+
+/* ── ŠTATISTIKY ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin: 1rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+  text-align: center;
+}
+.stat-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--gold2);
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface3);
+  border: 1px solid var(--gold);
+  color: var(--gold2);
+  padding: 0.7rem 1.2rem;
+  border-radius: 30px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 100;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Hidden inputs */
+#camInput, #galInput { display: none; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">🎨</div>
+  <div class="header-text">
+    <h1>Almanach Pána Starožitníka</h1>
+    <p>Aukcie · Inzercia · Analýza</p>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('auctions')">
+    <span class="tab-icon">🏛️</span>
+    <span>Aukcie</span>
+  </button>
+  <button class="tab" onclick="switchTab('market')">
+    <span class="tab-icon">🛒</span>
+    <span>Inzercia</span>
+  </button>
+  <button class="tab" onclick="switchTab('camera')">
+    <span class="tab-icon">📷</span>
+    <span>Fotka</span>
+  </button>
+  <button class="tab" onclick="switchTab('saved')">
+    <span class="tab-icon">📋</span>
+    <span>Uložené</span>
+  </button>
+  <button class="tab" onclick="switchTab('stats')">
+    <span class="tab-icon">📊</span>
+    <span>Štatistiky</span>
+  </button>
+</div>
+
+<!-- ══ STRÁNKA: AUKCIE ══ -->
+<div class="page active" id="page-auctions">
+  <div class="section-card">
+    <div class="section-title">Vyhľadávanie na aukčných portáloch</div>
+    <div class="section-sub">Zadaj priezvisko autora – otvoria sa výsledky na všetkých aukčných stránkach naraz</div>
+    <div class="input-row">
+      <input class="art-input" id="auction-query" placeholder="napr. Benka, Bazovský..." onkeydown="if(event.key==='Enter') openAuctions()">
+      <select class="art-input" id="auction-year" style="flex:0 0 110px;cursor:pointer">
+        <option value="">Všetky roky</option>
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+        <option value="2023">2023</option>
+        <option value="2022">2022</option>
+        <option value="2021">2021</option>
+        <option value="2020">2020</option>
+        <option value="2019">2019</option>
+        <option value="2018">2018</option>
+        <option value="2017">2017</option>
+        <option value="2016">2016</option>
+        <option value="2015">2015</option>
+        <option value="2014">2014</option>
+        <option value="2013">2013</option>
+        <option value="2012">2012</option>
+        <option value="2011">2011</option>
+        <option value="2010">2010</option>
+        <option value="2009">2009</option>
+        <option value="2008">2008</option>
+        <option value="2007">2007</option>
+        <option value="2006">2006</option>
+        <option value="2005">2005</option>
+        <option value="2004">2004</option>
+        <option value="2003">2003</option>
+        <option value="2002">2002</option>
+        <option value="2001">2001</option>
+        <option value="2000">2000</option>
+      </select>
+      <button class="btn btn-gold" onclick="openAuctions()">🔍</button>
+    </div>
+    <div class="sites-grid">
+      <button class="site-btn" onclick="openSingle('soga')">
+        <span class="site-icon">🏛️</span>
+        <span><span class="site-name">soga.sk</span><span class="site-type">Aukčná sieň</span></span>
+      </button>
+
+    </div>
+    <button class="btn-open-all" onclick="openAuctions()">
+      🚀 Otvoriť všetky aukčné stránky naraz
+    </button>
+  </div>
+
+  <!-- Výsledky scrapingu -->
+  <div class="section-card" id="scrape-results-auction" style="display:none"></div>
+
+  <div class="section-card">
+    <div class="table-header">
+      <div class="section-title" style="margin-bottom:0">Moje záznamy – aukcie</div>
+      <span class="badge" id="auction-count">0 záznamov</span>
+    </div>
+    <div class="section-sub">Nájdené diela si môžeš manuálne uložiť sem</div>
+
+    <button class="btn btn-outline btn-full" onclick="toggleAddForm('auction')">+ Pridať záznam</button>
+
+    <div class="add-form" id="add-form-auction">
+      <div class="form-grid">
+        <div class="form-group full">
+          <span class="form-label">Názov diela / Autor</span>
+          <input class="art-input" id="af-title" placeholder="napr. Martin Benka – Krajina">
+        </div>
+        <div class="form-group">
+          <span class="form-label">Cena</span>
+          <input class="art-input" id="af-price" placeholder="napr. 1 200 €">
+        </div>
+        <div class="form-group">
+          <span class="form-label">Dátum aukcie</span>
+          <input class="art-input" id="af-date" type="date">
+        </div>
+        <div class="form-group">
+          <span class="form-label">Zdroj</span>
+          <input class="art-input" id="af-source" placeholder="napr. soga.sk">
+        </div>
+        <div class="form-group">
+          <span class="form-label">Odkaz URL</span>
+          <input class="art-input" id="af-link" placeholder="https://...">
+        </div>
+        <div class="form-group full">
+          <span class="form-label">Poznámka</span>
+          <input class="art-input" id="af-note" placeholder="Voliteľná poznámka...">
+        </div>
+      </div>
+      <div style="display:flex;gap:0.6rem">
+        <button class="btn btn-gold" style="flex:1;justify-content:center" onclick="saveRecord('auction')">💾 Uložiť</button>
+        <button class="btn btn-outline" onclick="toggleAddForm('auction')">Zrušiť</button>
+      </div>
+    </div>
+
+    <div style="margin-top:0.8rem">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Názov / Autor</th>
+              <th>Cena</th>
+              <th>Dátum</th>
+              <th>Zdroj</th>
+              <th>Odkaz</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="auction-tbody">
+            <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🏛️</div><div class="empty-text">Zatiaľ žiadne záznamy.<br>Vyhľadaj autora a uloži si nálezy.</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STRÁNKA: INZERCIA ══ -->
+<div class="page" id="page-market">
+  <div class="section-card">
+    <div class="section-title">Vyhľadávanie na inzertných portáloch</div>
+    <div class="section-sub">Zadaj hľadané slovo – otvoria sa výsledky na všetkých inzertných stránkach naraz</div>
+    <div class="input-row">
+      <input class="art-input" id="market-query" placeholder="napr. obraz, olejomaľba..." onkeydown="if(event.key==='Enter') openMarket()">
+      <button class="btn btn-gold" onclick="openMarket()">🔍</button>
+    </div>
+    <div class="sites-grid">
+      <button class="site-btn" onclick="openSingle('bazos')">
+        <span class="site-icon">🛒</span>
+        <span><span class="site-name">bazos.sk</span><span class="site-type">Inzercia SK</span></span>
+      </button>
+      <button class="site-btn" onclick="openSingle('aukro')">
+        <span class="site-icon">⚡</span>
+        <span><span class="site-name">aukro.sk</span><span class="site-type">Online aukcie</span></span>
+      </button>
+      <button class="site-btn" onclick="openSingle('ebay')">
+        <span class="site-icon">🌍</span>
+        <span><span class="site-name">ebay.com</span><span class="site-type">Medzinárodný</span></span>
+      </button>
+    </div>
+    <button class="btn-open-all" onclick="openMarket()">
+      🚀 Otvoriť všetky inzertné stránky naraz
+    </button>
+  </div>
+
+  <!-- Výsledky scrapingu -->
+  <div class="section-card" id="scrape-results-market" style="display:none"></div>
+
+  <div class="section-card">
+    <div class="table-header">
+      <div class="section-title" style="margin-bottom:0">Moje záznamy – inzercia</div>
+      <span class="badge" id="market-count">0 záznamov</span>
+    </div>
+    <div class="section-sub">Nájdené inzeráty si môžeš manuálne uložiť sem</div>
+
+    <button class="btn btn-outline btn-full" onclick="toggleAddForm('market')">+ Pridať záznam</button>
+
+    <div class="add-form" id="add-form-market">
+      <div class="form-grid">
+        <div class="form-group full">
+          <span class="form-label">Názov inzerátu</span>
+          <input class="art-input" id="mf-title" placeholder="napr. Starý obraz – olejomaľba">
+        </div>
+        <div class="form-group">
+          <span class="form-label">Cena</span>
+          <input class="art-input" id="mf-price" placeholder="napr. 350 €">
+        </div>
+        <div class="form-group">
+          <span class="form-label">Dátum</span>
+          <input class="art-input" id="mf-date" type="date">
+        </div>
+        <div class="form-group">
+          <span class="form-label">Zdroj</span>
+          <input class="art-input" id="mf-source" placeholder="napr. bazos.sk">
+        </div>
+        <div class="form-group">
+          <span class="form-label">Odkaz URL</span>
+          <input class="art-input" id="mf-link" placeholder="https://...">
+        </div>
+        <div class="form-group full">
+          <span class="form-label">Poznámka</span>
+          <input class="art-input" id="mf-note" placeholder="Voliteľná poznámka...">
+        </div>
+      </div>
+      <div style="display:flex;gap:0.6rem">
+        <button class="btn btn-gold" style="flex:1;justify-content:center" onclick="saveRecord('market')">💾 Uložiť</button>
+        <button class="btn btn-outline" onclick="toggleAddForm('market')">Zrušiť</button>
+      </div>
+    </div>
+
+    <div style="margin-top:0.8rem">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Názov</th>
+              <th>Cena</th>
+              <th>Dátum</th>
+              <th>Zdroj</th>
+              <th>Odkaz</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="market-tbody">
+            <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🛒</div><div class="empty-text">Zatiaľ žiadne záznamy.<br>Vyhľadaj slovo a uloži si nálezy.</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STRÁNKA: KAMERA ══ -->
+<div class="page" id="page-camera">
+  <div class="section-card" style="margin-bottom:0.5rem">
+    <div class="section-title">Vizuálne vyhľadávanie</div>
+    <div class="section-sub">Odfot' dielo alebo vyber z galérie – Google Lens nájde podobné obrázky a informácie</div>
+  </div>
+
+  <div class="camera-zone" id="cameraZone" onclick="handleCamZoneClick()">
+    <button class="btn-clear-cam" onclick="clearCam(event)">✕</button>
+    <img id="cam-preview" alt="náhľad">
+    <div class="cam-placeholder">
+      <div class="cam-icon">📷</div>
+      <div class="cam-text">Klepni sem</div>
+      <div class="cam-sub">pre výber fotky</div>
+    </div>
+  </div>
+
+  <div class="cam-btns">
+    <button class="btn btn-gold" onclick="document.getElementById('camInput').click()">📷 Fotoaparát</button>
+    <button class="btn btn-outline" onclick="document.getElementById('galInput').click()">🖼️ Galéria</button>
+  </div>
+
+  <button class="btn btn-open-all" id="lens-search-btn" onclick="searchLens()" style="margin:0.5rem 1rem 1rem">
+    🔍 Vyhľadať cez Google Lens
+  </button>
+</div>
+
+<!-- ══ STRÁNKA: ULOŽENÉ ══ -->
+<div class="page" id="page-saved">
+  <div class="section-card">
+    <div class="section-title">Všetky uložené záznamy</div>
+    <div class="section-sub">Kombinácia aukčných aj inzertných záznamov</div>
+    <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
+      <button class="btn btn-outline" style="font-size:0.78rem" onclick="exportCSV()">📥 Export CSV</button>
+      <button class="btn btn-outline" style="font-size:0.78rem;color:var(--red);border-color:rgba(192,57,43,0.3)" onclick="clearAll()">🗑️ Vymazať všetko</button>
+    </div>
+  </div>
+  <div class="section-card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Typ</th>
+            <th>Názov / Autor</th>
+            <th>Cena</th>
+            <th>Zdroj</th>
+            <th>Dátum</th>
+            <th>Odkaz</th>
+          </tr>
+        </thead>
+        <tbody id="all-tbody">
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Zatiaľ žiadne uložené záznamy.</div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STRÁNKA: ŠTATISTIKY ══ -->
+<div class="page" id="page-stats">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="stat-total">0</div>
+      <div class="stat-label">Celkom záznamov</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="stat-auctions">0</div>
+      <div class="stat-label">Aukčných</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="stat-market">0</div>
+      <div class="stat-label">Inzertných</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="stat-avg">–</div>
+      <div class="stat-label">Priem. cena</div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">Rozdelenie podľa zdroja</div>
+    <div id="source-stats" style="margin-top:0.8rem">
+      <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">Pridaj záznamy pre zobrazenie štatistík</div></div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">Najdrahšie záznamy</div>
+    <div id="top-records" style="margin-top:0.8rem">
+      <div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">Zatiaľ žiadne záznamy s cenou</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Hidden inputs -->
+<input type="file" id="camInput" accept="image/*" capture="environment" onchange="handleCamFile(this)">
+<input type="file" id="galInput" accept="image/*" onchange="handleCamFile(this)">
+
+<script>
+// ── Dáta (localStorage) ──────────────────────────────
+const STORAGE_KEY = 'almanach_records';
+
+function loadRecords() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveRecords(records) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+
+// ── Cloudflare proxy ──────────────────────────────────
+const PROXY = 'https://almanach.panstarozitnik.workers.dev/';
+
+function proxyUrl(url) {
+  return PROXY + '?url=' + encodeURIComponent(url);
+}
+
+// ── URL mapy ─────────────────────────────────────────
+const URLS = {
+  soga:  (q, rok) => {
+    let url = `https://www.soga.sk/aukcie-obrazy-diela-umenie-starozitnosti/vyhladavanie?fulltext=${encodeURIComponent(q)}`;
+    if (rok) url += `&rok=${rok}`;
+    return url;
+  },
+  bazos: q => `https://umenie.bazos.sk/?hledat=${encodeURIComponent(q)}&rubriky=0&hlokalita=&humkreis=25&cenaod=&cenado=&Submit=Hľadať`,
+  aukro: q => `https://www.aukro.sk/search?query=${encodeURIComponent(q)}`,
+  ebay:  q => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}`,
+};
+
+// ── Tabs ──────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['auctions','market','camera','saved','stats'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'saved') renderAllTable();
+  if (name === 'stats') renderStats();
+}
+
+// ── Scraping pomocou Cloudflare proxy ─────────────────
+async function scrapeSoga(q, rok) {
+  const url = URLS.soga(q, rok);
+  const resp = await fetch(proxyUrl(url));
+  const html = await resp.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const items = [];
+
+  // Soga.sk štruktúra:
+  // div#searchArtworks > div.item
+  //   div.img > a > img
+  //   h2 > a  (autor)
+  //   div.desc > h3 (nazov) + table.about (ceny)
+
+  doc.querySelectorAll('#searchArtworks .item').forEach(item => {
+    const h2a = item.querySelector('h2 a');
+    if (!h2a) return;
+
+    const href = h2a.getAttribute('href') || '';
+    const fullLink = href.startsWith('http') ? href : 'https://www.soga.sk' + href;
+    const autor = (item.querySelector('h2')?.textContent || '').trim();
+    const nazov = (item.querySelector('.desc h3')?.textContent || '').trim();
+
+    const imgEl = item.querySelector('.img img');
+    const imgSrc = imgEl ? (imgEl.getAttribute('src') || '') : '';
+    const fullImg = imgSrc.startsWith('http') ? imgSrc : (imgSrc ? 'https://www.soga.sk' + imgSrc : '');
+
+    let odhadCena = '', konecnaCena = '';
+    item.querySelectorAll('table.about tr').forEach(tr => {
+      const tds = tr.querySelectorAll('td');
+      if (!tds.length) return;
+      const label = tds[0].textContent.trim().toLowerCase();
+      const val = tds.length >= 2 ? tds[1].textContent.trim() : '';
+      if (label.includes('odhadovan')) odhadCena = val;
+      else if (label.includes('konečn')) konecnaCena = val;
+      else if (label.includes('cena v predaji')) konecnaCena = 'Predaj: ' + val;
+      else if (label.includes('nevydražen')) konecnaCena = 'Nevydražené';
+    });
+
+    const aukciaMatch = fullLink.match(/\/aukcie\/([^/]+)\//);
+    const aukcia = aukciaMatch ? aukciaMatch[1] : '';
+
+    if (autor) items.push({ autor, nazov, odhadCena, konecnaCena, link: fullLink, img: fullImg, aukcia, source: 'soga.sk' });
+  });
+
+  return items;
+}
+
+async function scrapeBazos(q) {
+  const url = URLS.bazos(q);
+  const resp = await fetch(proxyUrl(url));
+  const html = await resp.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const items = [];
+
+  doc.querySelectorAll('.inzeraty, .inzerat, [class*="inzerat"], .maincontent .listingitem').forEach(el => {
+    const title = el.querySelector('h2,h3,.nazov,[class*="title"]')?.textContent?.trim();
+    if (!title || title.length < 3) return;
+    const priceEl = el.querySelector('.cena,[class*="price"],[class*="cena"]');
+    const price = priceEl?.textContent?.trim() || '';
+    const link = el.querySelector('a[href]')?.href || '';
+    const img = el.querySelector('img')?.src || '';
+    if (title) items.push({ title, price, link: link.startsWith('http') ? link : 'https://bazos.sk' + link, img, source: 'bazos.sk' });
+  });
+  return items;
+}
+
+async function scrapeAukro(q) {
+  const url = URLS.aukro(q);
+  const resp = await fetch(proxyUrl(url));
+  const html = await resp.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const items = [];
+
+  doc.querySelectorAll('[class*="offer"], [class*="item"], article').forEach(el => {
+    const title = el.querySelector('h2,h3,[class*="title"],[class*="name"]')?.textContent?.trim();
+    if (!title || title.length < 3) return;
+    const priceEl = el.querySelector('[class*="price"],[class*="cena"]');
+    const price = priceEl?.textContent?.trim() || '';
+    const link = el.querySelector('a[href]')?.href || '';
+    const img = el.querySelector('img')?.src || '';
+    if (title) items.push({ title, price, link: link.startsWith('http') ? link : 'https://www.aukro.sk' + link, img, source: 'aukro.sk' });
+  });
+  return items;
+}
+
+// ── Zobrazenie výsledkov scrapingu ────────────────────
+function renderScrapedResults(items, containerId, type) {
+  const container = document.getElementById(containerId);
+  if (!items.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">Žiadne výsledky nenájdené.<br>Skús iné kľúčové slovo.</div></div>`;
+    return;
+  }
+
+  const isAuction = type === 'auction';
+
+  if (isAuction) {
+    // Aukčná tabuľka so stĺpcami: Zdroj, Autor, Názov, Odh. cena, Kon. cena, Aukcia, Detail
+    container.innerHTML = `
+      <div style="margin-bottom:0.8rem;font-size:0.78rem;color:var(--muted)">Nájdených <strong style="color:var(--gold)">${items.length}</strong> výsledkov – kliknutím na ＋ uložíš záznam</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Zdroj</th>
+              <th>Autor</th>
+              <th>Názov diela</th>
+              <th>Odh. cena</th>
+              <th>Kon. cena</th>
+              <th>Aukcia</th>
+              <th>Detail</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map((item, i) => `
+              <tr>
+                <td><span class="td-source">${item.source}</span></td>
+                <td style="font-weight:500">${item.autor || item.title || '–'}</td>
+                <td>${item.nazov || '–'}</td>
+                <td class="td-price" style="white-space:nowrap;font-size:0.75rem">${item.odhadCena || item.price || '–'}</td>
+                <td class="td-price" style="white-space:nowrap;font-size:0.75rem">${item.konecnaCena || '–'}</td>
+                <td style="font-size:0.72rem;color:var(--muted)">${item.aukcia || '–'}</td>
+                <td>${item.link ? `<a class="td-link" href="${item.link}" target="_blank">↗</a>` : '–'}</td>
+                <td><button onclick="quickSave(${i}, '${type}')" style="background:var(--surface3);border:1px solid var(--border2);color:var(--gold);border-radius:8px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.8rem">＋</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else {
+    // Inzertné výsledky – kartičky ako predtým
+    container.innerHTML = `
+      <div style="margin-bottom:0.8rem;font-size:0.78rem;color:var(--muted)">Nájdených <strong style="color:var(--gold)">${items.length}</strong> výsledkov – kliknutím uložíš záznam</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem">
+        ${items.map((item, i) => `
+          <div style="display:flex;gap:0.8rem;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.7rem;cursor:pointer;transition:border-color 0.2s" 
+               onclick="quickSave(${i}, '${type}')" 
+               onmouseover="this.style.borderColor='var(--gold)'" 
+               onmouseout="this.style.borderColor='var(--border)'">
+            ${item.img ? `<img src="${item.img}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0" onerror="this.style.display='none'">` : '<div style="width:48px;height:48px;background:var(--surface3);border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem">🖼️</div>'}
+            <div style="flex:1;min-width:0">
+              <div style="font-size:0.82rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.title}</div>
+              <div style="display:flex;gap:0.5rem;margin-top:0.2rem;align-items:center">
+                <span style="font-size:0.78rem;color:var(--gold);font-weight:600">${item.price || '–'}</span>
+                <span style="font-size:0.68rem;color:var(--muted);background:var(--surface3);padding:0.1rem 0.4rem;border-radius:4px">${item.source}</span>
+              </div>
+            </div>
+            <div style="font-size:1rem;color:var(--muted);flex-shrink:0">＋</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  window['_scraped_' + type] = items;
+}
+
+function quickSave(idx, type) {
+  const item = window['_scraped_' + type][idx];
+  if (!item) return;
+  const record = {
+    id: Date.now(),
+    type,
+    title: item.autor ? `${item.autor} – ${item.nazov || ''}` : (item.title || ''),
+    price: item.konecnaCena || item.odhadCena || item.price || '',
+    odhadCena: item.odhadCena || '',
+    konecnaCena: item.konecnaCena || '',
+    autor: item.autor || '',
+    nazov: item.nazov || '',
+    aukcia: item.aukcia || '',
+    date: new Date().toISOString().split('T')[0],
+    source: item.source,
+    link: item.link,
+    note: '',
+  };
+  const records = loadRecords();
+  records.push(record);
+  saveRecords(records);
+  renderTable(type);
+  updateCounts();
+  showToast('✅ Uložené: ' + (item.autor || item.title || '').substring(0, 30));
+}
+
+// ── Vyhľadávanie s automatickým scrapingom ────────────
+async function openAuctions() {
+  const q = document.getElementById('auction-query').value.trim();
+  const rok = document.getElementById('auction-year').value;
+  if (!q) { showToast('Zadaj meno autora'); return; }
+
+  const btn = document.querySelector('#page-auctions .btn-open-all');
+  btn.textContent = '⏳ Načítavam výsledky...';
+  btn.disabled = true;
+
+  const resultsEl = document.getElementById('scrape-results-auction');
+  resultsEl.style.display = 'block';
+  resultsEl.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--muted)">⏳ Načítavam soga.sk${rok ? ' (rok ' + rok + ')' : ''}...</div>`;
+
+  try {
+    const sogaItems = await scrapeSoga(q, rok);
+    renderScrapedResults(sogaItems, 'scrape-results-auction', 'auction');
+  } catch(e) {
+    resultsEl.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Chyba pri načítaní.<br>Skús znova alebo otvor stránky manuálne.</div></div>`;
+  }
+
+  btn.textContent = '🚀 Otvoriť všetky aukčné stránky naraz';
+  btn.disabled = false;
+}
+
+async function openMarket() {
+  const q = document.getElementById('market-query').value.trim();
+  if (!q) { showToast('Zadaj hľadané slovo'); return; }
+
+  const btn = document.querySelector('#page-market .btn-open-all');
+  btn.textContent = '⏳ Načítavam výsledky...';
+  btn.disabled = true;
+
+  const resultsEl = document.getElementById('scrape-results-market');
+  resultsEl.style.display = 'block';
+  resultsEl.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--muted)">⏳ Načítavam bazos.sk, aukro.sk, ebay.com...</div>`;
+
+  try {
+    const [bazosItems, aukroItems] = await Promise.allSettled([
+      scrapeBazos(q),
+      scrapeAukro(q),
+    ]);
+
+    const all = [
+      ...(bazosItems.status === 'fulfilled' ? bazosItems.value : []),
+      ...(aukroItems.status === 'fulfilled' ? aukroItems.value : []),
+    ];
+
+    renderScrapedResults(all, 'scrape-results-market', 'market');
+  } catch(e) {
+    resultsEl.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Chyba pri načítaní.<br>Skús znova alebo otvor stránky manuálne.</div></div>`;
+  }
+
+  btn.textContent = '🚀 Otvoriť všetky inzertné stránky naraz';
+  btn.disabled = false;
+}
+
+function openSingle(site) {
+  const isAuction = ['soga'].includes(site);
+  const q = document.getElementById(isAuction ? 'auction-query' : 'market-query').value.trim();
+  if (!q) { showToast('Najprv zadaj hľadané slovo'); return; }
+  const rok = isAuction ? document.getElementById('auction-year').value : '';
+  window.open(site === 'soga' ? URLS.soga(q, rok) : URLS[site](q), '_blank');
+}
+
+// ── Formulár – pridanie záznamu ───────────────────────
+function toggleAddForm(type) {
+  const f = document.getElementById('add-form-' + type);
+  f.classList.toggle('open');
+}
+
+function saveRecord(type) {
+  const prefix = type === 'auction' ? 'af' : 'mf';
+  const title = document.getElementById(prefix + '-title').value.trim();
+  if (!title) { showToast('Zadaj aspoň názov'); return; }
+
+  const record = {
+    id: Date.now(),
+    type,
+    title,
+    price: document.getElementById(prefix + '-price').value.trim(),
+    date:  document.getElementById(prefix + '-date').value,
+    source:document.getElementById(prefix + '-source').value.trim(),
+    link:  document.getElementById(prefix + '-link').value.trim(),
+    note:  document.getElementById(prefix + '-note').value.trim(),
+  };
+
+  const records = loadRecords();
+  records.push(record);
+  saveRecords(records);
+
+  // Clear form
+  ['title','price','date','source','link','note'].forEach(f => {
+    document.getElementById(prefix + '-' + f).value = '';
+  });
+  toggleAddForm(type);
+  renderTable(type);
+  updateCounts();
+  showToast('✅ Záznam uložený!');
+}
+
+function deleteRecord(id) {
+  const records = loadRecords().filter(r => r.id !== id);
+  saveRecords(records);
+  renderTable('auction');
+  renderTable('market');
+  renderAllTable();
+  updateCounts();
+  showToast('Záznam vymazaný');
+}
+
+// ── Render tabuľky ────────────────────────────────────
+function renderTable(type) {
+  const records = loadRecords().filter(r => r.type === type);
+  const tbody = document.getElementById(type + '-tbody');
+
+  if (!records.length) {
+    const icon = type === 'auction' ? '🏛️' : '🛒';
+    const txt = type === 'auction' ? 'Vyhľadaj autora a uloži si nálezy.' : 'Vyhľadaj slovo a uloži si nálezy.';
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">${icon}</div><div class="empty-text">Zatiaľ žiadne záznamy.<br>${txt}</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = records.map(r => `
+    <tr>
+      <td>${r.title}</td>
+      <td class="td-price">${r.price || '–'}</td>
+      <td>${r.date ? new Date(r.date).toLocaleDateString('sk-SK') : '–'}</td>
+      <td><span class="td-source">${r.source || '–'}</span></td>
+      <td>${r.link ? `<a class="td-link" href="${r.link}" target="_blank">↗ otvoriť</a>` : '–'}</td>
+      <td><button class="td-delete" onclick="deleteRecord(${r.id})">🗑</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderAllTable() {
+  const records = loadRecords();
+  const tbody = document.getElementById('all-tbody');
+  if (!records.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Zatiaľ žiadne uložené záznamy.</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = records.map(r => `
+    <tr>
+      <td><span class="td-source">${r.type === 'auction' ? '🏛️' : '🛒'}</span></td>
+      <td>${r.title}</td>
+      <td class="td-price">${r.price || '–'}</td>
+      <td><span class="td-source">${r.source || '–'}</span></td>
+      <td>${r.date ? new Date(r.date).toLocaleDateString('sk-SK') : '–'}</td>
+      <td>${r.link ? `<a class="td-link" href="${r.link}" target="_blank">↗</a>` : '–'}</td>
+    </tr>
+  `).join('');
+}
+
+function updateCounts() {
+  const records = loadRecords();
+  const ac = records.filter(r => r.type === 'auction').length;
+  const mc = records.filter(r => r.type === 'market').length;
+  document.getElementById('auction-count').textContent = ac + ' záznamov';
+  document.getElementById('market-count').textContent = mc + ' záznamov';
+}
+
+// ── Štatistiky ────────────────────────────────────────
+function renderStats() {
+  const records = loadRecords();
+  const ac = records.filter(r => r.type === 'auction').length;
+  const mc = records.filter(r => r.type === 'market').length;
+
+  document.getElementById('stat-total').textContent = records.length;
+  document.getElementById('stat-auctions').textContent = ac;
+  document.getElementById('stat-market').textContent = mc;
+
+  // Priemerná cena
+  const prices = records
+    .map(r => parseFloat((r.price || '').replace(/[^\d,.]/g,'').replace(',','.')))
+    .filter(p => !isNaN(p) && p > 0);
+  if (prices.length) {
+    const avg = prices.reduce((a,b) => a+b, 0) / prices.length;
+    document.getElementById('stat-avg').textContent = Math.round(avg).toLocaleString('sk-SK') + ' €';
+  } else {
+    document.getElementById('stat-avg').textContent = '–';
+  }
+
+  // Zdroje
+  const sources = {};
+  records.forEach(r => {
+    const s = r.source || 'Neznámy';
+    sources[s] = (sources[s] || 0) + 1;
+  });
+  const srcEl = document.getElementById('source-stats');
+  if (!Object.keys(sources).length) {
+    srcEl.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">Pridaj záznamy pre zobrazenie štatistík</div></div>`;
+  } else {
+    const max = Math.max(...Object.values(sources));
+    srcEl.innerHTML = Object.entries(sources).sort((a,b)=>b[1]-a[1]).map(([s,c]) => `
+      <div style="margin-bottom:0.7rem">
+        <div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:0.3rem">
+          <span>${s}</span><span style="color:var(--gold)">${c}×</span>
+        </div>
+        <div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden">
+          <div style="height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:${(c/max*100).toFixed(0)}%;border-radius:4px;transition:width 0.5s"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Top záznamy
+  const topEl = document.getElementById('top-records');
+  const withPrice = records
+    .map(r => ({...r, numPrice: parseFloat((r.price||'').replace(/[^\d,.]/g,'').replace(',','.')) }))
+    .filter(r => !isNaN(r.numPrice) && r.numPrice > 0)
+    .sort((a,b) => b.numPrice - a.numPrice)
+    .slice(0, 5);
+
+  if (!withPrice.length) {
+    topEl.innerHTML = `<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">Zatiaľ žiadne záznamy s cenou</div></div>`;
+  } else {
+    topEl.innerHTML = withPrice.map((r, i) => `
+      <div style="display:flex;align-items:center;gap:0.8rem;padding:0.6rem 0;border-bottom:1px solid var(--border)">
+        <span style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold);width:20px;text-align:center">${i+1}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:0.82rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.title}</div>
+          <div style="font-size:0.7rem;color:var(--muted)">${r.source || '–'}</div>
+        </div>
+        <div style="font-weight:600;color:var(--gold2);font-size:0.85rem;white-space:nowrap">${r.price}</div>
+      </div>
+    `).join('');
+  }
+}
+
+// ── Export CSV ────────────────────────────────────────
+function exportCSV() {
+  const records = loadRecords();
+  if (!records.length) { showToast('Žiadne záznamy na export'); return; }
+  const header = ['Typ','Názov/Autor','Cena','Dátum','Zdroj','Odkaz','Poznámka'];
+  const rows = records.map(r => [
+    r.type === 'auction' ? 'Aukcia' : 'Inzercia',
+    r.title, r.price, r.date, r.source, r.link, r.note
+  ].map(v => `"${(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv = [header.join(','), ...rows].join('\n');
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'artfinder_export.csv';
+  a.click();
+  showToast('📥 CSV exportovaný!');
+}
+
+function clearAll() {
+  if (!confirm('Naozaj vymazať všetky záznamy?')) return;
+  saveRecords([]);
+  renderTable('auction');
+  renderTable('market');
+  renderAllTable();
+  updateCounts();
+  showToast('Všetky záznamy vymazané');
+}
+
+// ── Kamera ────────────────────────────────────────────
+let camFile = null;
+
+function handleCamZoneClick() {
+  if (!camFile) document.getElementById('galInput').click();
+}
+
+function handleCamFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  camFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('cam-preview').src = e.target.result;
+    document.getElementById('cameraZone').classList.add('has-img');
+    document.getElementById('lens-search-btn').classList.add('visible');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function clearCam(e) {
+  e.stopPropagation();
+  camFile = null;
+  document.getElementById('cam-preview').src = '';
+  document.getElementById('cameraZone').classList.remove('has-img');
+  document.getElementById('lens-search-btn').classList.remove('visible');
+}
+
+function searchLens() {
+  if (!camFile) return;
+  const lensUrl = `https://lens.google.com/upload?ep=ccm&s=&st=${Date.now()}`;
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = lensUrl;
+  form.enctype = 'multipart/form-data';
+  form.target = '_blank';
+  const fi = document.createElement('input');
+  fi.type = 'file';
+  fi.name = 'encoded_image';
+  form.appendChild(fi);
+  document.body.appendChild(form);
+  const dt = new DataTransfer();
+  dt.items.add(camFile);
+  fi.files = dt.files;
+  form.submit();
+  document.body.removeChild(form);
+  showToast('🔍 Otváram Google Lens...');
+}
+
+// ── Toast ─────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Init ──────────────────────────────────────────────
+renderTable('auction');
+renderTable('market');
+updateCounts();
+</script>
+<script>
+// ── PWA Service Worker registrácia ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW zaregistrovaný:', reg.scope))
+      .catch(err => console.log('SW chyba:', err));
+  });
+}
+
+// ── PWA Install prompt ──
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  // Zobrazíme toast s ponukou inštalácie
+  setTimeout(() => {
+    const t = document.getElementById('toast');
+    t.innerHTML = '📱 Nainštalovať ako appku? <button onclick="installPWA()" style="background:var(--gold);color:#1a1408;border:none;border-radius:8px;padding:0.2rem 0.6rem;margin-left:0.5rem;cursor:pointer;font-weight:600">Áno</button>';
+    t.classList.add('show');
+    t.style.whiteSpace = 'normal';
+    t.style.maxWidth = '90vw';
+  }, 3000);
+});
+
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(choice => {
+      if (choice.outcome === 'accepted') showToast('✅ Almanach nainštalovaný!');
+      deferredPrompt = null;
+      document.getElementById('toast').classList.remove('show');
+    });
+  }
+}
+</script>
+</body>
+</html>
