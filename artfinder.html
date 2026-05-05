@@ -511,6 +511,11 @@ tr:hover td { background: var(--surface2); }
   letter-spacing: 0.05em;
 }
 
+/* ── SCRAPE SOURCE TAGS ── */
+.source-bazos   { border-color: rgba(255,140,0,0.4); color: #ffa040; }
+.source-aukro   { border-color: rgba(100,180,255,0.4); color: #64b4ff; }
+.source-antique { border-color: rgba(180,138,255,0.4); color: #b48aff; }
+
 /* ── TOAST ── */
 .toast {
   position: fixed;
@@ -542,7 +547,9 @@ tr:hover td { background: var(--surface2); }
 
 <!-- Header -->
 <div class="header">
-  <div class="header-logo">🎨</div>
+  <div class="header-logo" style="background:none;box-shadow:none;padding:0;overflow:hidden">
+    <img src="https://panstarozitnik.sk/wp-content/uploads/2026/01/cropped-Pan-Starozitnik-01-scaled-1.png" alt="Pán Starožitník" style="width:44px;height:44px;object-fit:contain;border-radius:12px">
+  </div>
   <div class="header-text">
     <h1>Almanach Pána Starožitníka</h1>
     <p>Aukcie · Inzercia · Analýza</p>
@@ -562,14 +569,6 @@ tr:hover td { background: var(--surface2); }
   <button class="tab" onclick="switchTab('camera')">
     <span class="tab-icon">📷</span>
     <span>Fotka</span>
-  </button>
-  <button class="tab" onclick="switchTab('saved')">
-    <span class="tab-icon">📋</span>
-    <span>Uložené</span>
-  </button>
-  <button class="tab" onclick="switchTab('stats')">
-    <span class="tab-icon">📊</span>
-    <span>Štatistiky</span>
   </button>
 </div>
 
@@ -617,77 +616,24 @@ tr:hover td { background: var(--surface2); }
         <span class="site-icon">🏛️</span>
         <span><span class="site-name">soga.sk</span><span class="site-type">Aukčná sieň</span></span>
       </button>
-
     </div>
     <button class="btn-open-all" onclick="openAuctions()">
-      🚀 Otvoriť všetky aukčné stránky naraz
+      🚀 Vyhľadať na soga.sk + biografie dartesro.sk
     </button>
   </div>
 
   <!-- Výsledky scrapingu -->
   <div class="section-card" id="scrape-results-auction" style="display:none"></div>
 
-  <div class="section-card">
-    <div class="table-header">
-      <div class="section-title" style="margin-bottom:0">Moje záznamy – aukcie</div>
-      <span class="badge" id="auction-count">0 záznamov</span>
-    </div>
-    <div class="section-sub">Nájdené diela si môžeš manuálne uložiť sem</div>
+  <!-- DARTE biografie -->
+  <div class="section-card" id="darte-bio-section" style="display:none">
+    <div class="section-title">📚 Biografie autorov – dartesro.sk</div>
+    <div id="darte-bio-results"></div>
+  </div>
 
-    <button class="btn btn-outline btn-full" onclick="toggleAddForm('auction')">+ Pridať záznam</button>
-
-    <div class="add-form" id="add-form-auction">
-      <div class="form-grid">
-        <div class="form-group full">
-          <span class="form-label">Názov diela / Autor</span>
-          <input class="art-input" id="af-title" placeholder="napr. Martin Benka – Krajina">
-        </div>
-        <div class="form-group">
-          <span class="form-label">Cena</span>
-          <input class="art-input" id="af-price" placeholder="napr. 1 200 €">
-        </div>
-        <div class="form-group">
-          <span class="form-label">Dátum aukcie</span>
-          <input class="art-input" id="af-date" type="date">
-        </div>
-        <div class="form-group">
-          <span class="form-label">Zdroj</span>
-          <input class="art-input" id="af-source" placeholder="napr. soga.sk">
-        </div>
-        <div class="form-group">
-          <span class="form-label">Odkaz URL</span>
-          <input class="art-input" id="af-link" placeholder="https://...">
-        </div>
-        <div class="form-group full">
-          <span class="form-label">Poznámka</span>
-          <input class="art-input" id="af-note" placeholder="Voliteľná poznámka...">
-        </div>
-      </div>
-      <div style="display:flex;gap:0.6rem">
-        <button class="btn btn-gold" style="flex:1;justify-content:center" onclick="saveRecord('auction')">💾 Uložiť</button>
-        <button class="btn btn-outline" onclick="toggleAddForm('auction')">Zrušiť</button>
-      </div>
-    </div>
-
-    <div style="margin-top:0.8rem">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Názov / Autor</th>
-              <th>Cena</th>
-              <th>Dátum</th>
-              <th>Zdroj</th>
-              <th>Odkaz</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="auction-tbody">
-            <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🏛️</div><div class="empty-text">Zatiaľ žiadne záznamy.<br>Vyhľadaj autora a uloži si nálezy.</div></div></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+  <!-- DARTE detail autora -->
+  <div class="section-card" id="darte-detail-section" style="display:none">
+    <div id="darte-detail-container"></div>
   </div>
 </div>
 
@@ -695,7 +641,7 @@ tr:hover td { background: var(--surface2); }
 <div class="page" id="page-market">
   <div class="section-card">
     <div class="section-title">Vyhľadávanie na inzertných portáloch</div>
-    <div class="section-sub">Zadaj hľadané slovo – otvoria sa výsledky na všetkých inzertných stránkach naraz</div>
+    <div class="section-sub">Zadaj hľadané slovo – výsledky z bazos.sk aj aukro.cz sa načítajú do oddelených tabuliek</div>
     <div class="input-row">
       <input class="art-input" id="market-query" placeholder="napr. obraz, olejomaľba..." onkeydown="if(event.key==='Enter') openMarket()">
       <button class="btn btn-gold" onclick="openMarket()">🔍</button>
@@ -705,85 +651,39 @@ tr:hover td { background: var(--surface2); }
         <span class="site-icon">🛒</span>
         <span><span class="site-name">bazos.sk</span><span class="site-type">Inzercia SK</span></span>
       </button>
-      <button class="site-btn" onclick="openSingle('aukro')">
+      <button class="site-btn" onclick="openSingle('aukrocz')">
         <span class="site-icon">⚡</span>
-        <span><span class="site-name">aukro.sk</span><span class="site-type">Online aukcie</span></span>
+        <span><span class="site-name">aukro.cz</span><span class="site-type">Aukcie CZ</span></span>
+      </button>
+      <button class="site-btn" onclick="openSingle('aukroczantique')">
+        <span class="site-icon">🏺</span>
+        <span><span class="site-name">aukro.cz / Zberateľstvo</span><span class="site-type">Starožitnosti CZ</span></span>
       </button>
       <button class="site-btn" onclick="openSingle('ebay')">
         <span class="site-icon">🌍</span>
-        <span><span class="site-name">ebay.com</span><span class="site-type">Medzinárodný</span></span>
+        <span><span class="site-name">ebay.com</span><span class="site-type">Predané – 3 roky</span></span>
       </button>
     </div>
     <button class="btn-open-all" onclick="openMarket()">
-      🚀 Otvoriť všetky inzertné stránky naraz
+      🚀 Načítať bazos.sk + aukro.cz
+    </button>
+    <button class="btn btn-outline btn-full" style="margin-top:0.5rem;font-size:0.75rem;color:var(--muted)" onclick="debugAukro()">
+      🔧 Debug aukro.cz odpoveď
     </button>
   </div>
 
-  <!-- Výsledky scrapingu -->
-  <div class="section-card" id="scrape-results-market" style="display:none"></div>
+  <!-- Výsledky bazos.sk -->
+  <div class="section-card" id="scrape-results-bazos" style="display:none"></div>
 
-  <div class="section-card">
-    <div class="table-header">
-      <div class="section-title" style="margin-bottom:0">Moje záznamy – inzercia</div>
-      <span class="badge" id="market-count">0 záznamov</span>
-    </div>
-    <div class="section-sub">Nájdené inzeráty si môžeš manuálne uložiť sem</div>
+  <!-- Výsledky aukro.cz – aukcie -->
+  <div class="section-card" id="scrape-results-aukro" style="display:none"></div>
 
-    <button class="btn btn-outline btn-full" onclick="toggleAddForm('market')">+ Pridať záznam</button>
+  <!-- Výsledky aukro.cz – zberateľstvo/antique -->
+  <div class="section-card" id="scrape-results-aukro-antique" style="display:none"></div>
 
-    <div class="add-form" id="add-form-market">
-      <div class="form-grid">
-        <div class="form-group full">
-          <span class="form-label">Názov inzerátu</span>
-          <input class="art-input" id="mf-title" placeholder="napr. Starý obraz – olejomaľba">
-        </div>
-        <div class="form-group">
-          <span class="form-label">Cena</span>
-          <input class="art-input" id="mf-price" placeholder="napr. 350 €">
-        </div>
-        <div class="form-group">
-          <span class="form-label">Dátum</span>
-          <input class="art-input" id="mf-date" type="date">
-        </div>
-        <div class="form-group">
-          <span class="form-label">Zdroj</span>
-          <input class="art-input" id="mf-source" placeholder="napr. bazos.sk">
-        </div>
-        <div class="form-group">
-          <span class="form-label">Odkaz URL</span>
-          <input class="art-input" id="mf-link" placeholder="https://...">
-        </div>
-        <div class="form-group full">
-          <span class="form-label">Poznámka</span>
-          <input class="art-input" id="mf-note" placeholder="Voliteľná poznámka...">
-        </div>
-      </div>
-      <div style="display:flex;gap:0.6rem">
-        <button class="btn btn-gold" style="flex:1;justify-content:center" onclick="saveRecord('market')">💾 Uložiť</button>
-        <button class="btn btn-outline" onclick="toggleAddForm('market')">Zrušiť</button>
-      </div>
-    </div>
+  <!-- Debug -->
+  <div class="section-card" id="debug-aukro" style="display:none;word-break:break-all;font-size:0.68rem;font-family:monospace;max-height:400px;overflow-y:auto"></div>
 
-    <div style="margin-top:0.8rem">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Názov</th>
-              <th>Cena</th>
-              <th>Dátum</th>
-              <th>Zdroj</th>
-              <th>Odkaz</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="market-tbody">
-            <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🛒</div><div class="empty-text">Zatiaľ žiadne záznamy.<br>Vyhľadaj slovo a uloži si nálezy.</div></div></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- ══ STRÁNKA: KAMERA ══ -->
@@ -811,73 +711,6 @@ tr:hover td { background: var(--surface2); }
   <button class="btn btn-open-all" id="lens-search-btn" onclick="searchLens()" style="margin:0.5rem 1rem 1rem">
     🔍 Vyhľadať cez Google Lens
   </button>
-</div>
-
-<!-- ══ STRÁNKA: ULOŽENÉ ══ -->
-<div class="page" id="page-saved">
-  <div class="section-card">
-    <div class="section-title">Všetky uložené záznamy</div>
-    <div class="section-sub">Kombinácia aukčných aj inzertných záznamov</div>
-    <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
-      <button class="btn btn-outline" style="font-size:0.78rem" onclick="exportCSV()">📥 Export CSV</button>
-      <button class="btn btn-outline" style="font-size:0.78rem;color:var(--red);border-color:rgba(192,57,43,0.3)" onclick="clearAll()">🗑️ Vymazať všetko</button>
-    </div>
-  </div>
-  <div class="section-card">
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Typ</th>
-            <th>Názov / Autor</th>
-            <th>Cena</th>
-            <th>Zdroj</th>
-            <th>Dátum</th>
-            <th>Odkaz</th>
-          </tr>
-        </thead>
-        <tbody id="all-tbody">
-          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Zatiaľ žiadne uložené záznamy.</div></div></td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- ══ STRÁNKA: ŠTATISTIKY ══ -->
-<div class="page" id="page-stats">
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-value" id="stat-total">0</div>
-      <div class="stat-label">Celkom záznamov</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="stat-auctions">0</div>
-      <div class="stat-label">Aukčných</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="stat-market">0</div>
-      <div class="stat-label">Inzertných</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value" id="stat-avg">–</div>
-      <div class="stat-label">Priem. cena</div>
-    </div>
-  </div>
-
-  <div class="section-card">
-    <div class="section-title">Rozdelenie podľa zdroja</div>
-    <div id="source-stats" style="margin-top:0.8rem">
-      <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">Pridaj záznamy pre zobrazenie štatistík</div></div>
-    </div>
-  </div>
-
-  <div class="section-card">
-    <div class="section-title">Najdrahšie záznamy</div>
-    <div id="top-records" style="margin-top:0.8rem">
-      <div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">Zatiaľ žiadne záznamy s cenou</div></div>
-    </div>
-  </div>
 </div>
 
 <!-- Toast -->
@@ -909,26 +742,27 @@ function proxyUrl(url) {
 
 // ── URL mapy ─────────────────────────────────────────
 const URLS = {
-  soga:  (q, rok) => {
+  soga:     (q, rok) => {
     let url = `https://www.soga.sk/aukcie-obrazy-diela-umenie-starozitnosti/vyhladavanie?fulltext=${encodeURIComponent(q)}`;
     if (rok) url += `&rok=${rok}`;
     return url;
   },
-  bazos: q => `https://umenie.bazos.sk/?hledat=${encodeURIComponent(q)}&rubriky=0&hlokalita=&humkreis=25&cenaod=&cenado=&Submit=Hľadať`,
-  aukro: q => `https://www.aukro.sk/search?query=${encodeURIComponent(q)}`,
-  ebay:  q => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}`,
+  obrazyvaukci: q => `https://www.obrazyvaukci.cz/Vysledky/Index/0?p=1&term=${encodeURIComponent(q)}&ord=date`,
+  bazos:    q => `https://www.bazos.sk/search.php?hledat=${encodeURIComponent(q)}&rubriky=www&hlokalita=&humkreis=25&cenaod=&cenado=&Submit=H%C4%BEada%C5%A5&order=&kitx=ano`,
+  aukrocz:        q => `https://aukro.cz/vysledky-vyhledavani?text=${encodeURIComponent(q)}&searchAll=true&subbrand=BAZAAR`,
+  aukroczantique: q => `https://aukro.cz/vysledky-vyhledavani?text=${encodeURIComponent(q)}&searchAll=true&subbrand=ANTIQUE&subbrandExclusive=true`,
+  aukro:    q => `https://www.aukro.sk/search?query=${encodeURIComponent(q)}`,
+  ebay:     q => `https://www.ebay.com/sh/research?marketplace=ALL&keywords=${encodeURIComponent(q)}&dayRange=1095&endDate=1777378490157&startDate=1682770490157&categoryId=0&offset=0&limit=50&tabName=SOLD&tz=Europe%2FBratislava`,
 };
 
 // ── Tabs ──────────────────────────────────────────────
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach((t,i) => {
-    const names = ['auctions','market','camera','saved','stats'];
+    const names = ['auctions','market','camera'];
     t.classList.toggle('active', names[i] === name);
   });
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
-  if (name === 'saved') renderAllTable();
-  if (name === 'stats') renderStats();
 }
 
 // ── Scraping pomocou Cloudflare proxy ─────────────────
@@ -939,12 +773,6 @@ async function scrapeSoga(q, rok) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   const items = [];
-
-  // Soga.sk štruktúra:
-  // div#searchArtworks > div.item
-  //   div.img > a > img
-  //   h2 > a  (autor)
-  //   div.desc > h3 (nazov) + table.about (ceny)
 
   doc.querySelectorAll('#searchArtworks .item').forEach(item => {
     const h2a = item.querySelector('h2 a');
@@ -988,52 +816,721 @@ async function scrapeBazos(q) {
   const doc = parser.parseFromString(html, 'text/html');
   const items = [];
 
-  doc.querySelectorAll('.inzeraty, .inzerat, [class*="inzerat"], .maincontent .listingitem').forEach(el => {
-    const title = el.querySelector('h2,h3,.nazov,[class*="title"]')?.textContent?.trim();
+  doc.querySelectorAll('div.inzeraty.inzeratyflex').forEach(el => {
+    const titleEl = el.querySelector('h2.nadpis a');
+    if (!titleEl) return;
+    const title = titleEl.textContent.trim();
     if (!title || title.length < 3) return;
-    const priceEl = el.querySelector('.cena,[class*="price"],[class*="cena"]');
-    const price = priceEl?.textContent?.trim() || '';
-    const link = el.querySelector('a[href]')?.href || '';
-    const img = el.querySelector('img')?.src || '';
-    if (title) items.push({ title, price, link: link.startsWith('http') ? link : 'https://bazos.sk' + link, img, source: 'bazos.sk' });
+
+    const href = titleEl.getAttribute('href') || '';
+    const link = href.startsWith('http') ? href : 'https://www.bazos.sk' + href;
+
+    const priceEl = el.querySelector('.inzeratycena b span');
+    const price = priceEl ? priceEl.textContent.trim() : '';
+
+    const lokEl = el.querySelector('.inzeratylok');
+    const lokalita = lokEl ? lokEl.textContent.trim().replace(/\n/g,' ').trim() : '';
+
+    const datumEl = el.querySelector('.velikost10');
+    const datumText = datumEl ? datumEl.textContent.trim() : '';
+    const datumMatch = datumText.match(/\[([^\]]+)\]/);
+    const datum = datumMatch ? datumMatch[1] : '';
+
+    const opisEl = el.querySelector('.popis');
+    const popis = opisEl ? opisEl.textContent.trim().substring(0, 120) : '';
+
+    const imgEl = el.querySelector('img.obrazek');
+    const img = imgEl ? (imgEl.getAttribute('src') || '') : '';
+    const imgFull = img.includes('empty.gif') ? '' : (img.startsWith('http') ? img : 'https://www.bazos.sk' + img);
+
+    items.push({ title, price, lokalita, datum, popis, link, img: imgFull, source: 'bazos.sk' });
   });
   return items;
 }
 
-async function scrapeAukro(q) {
-  const url = URLS.aukro(q);
+
+
+// ── aukro.cz – parsovanie aukCache ────────────────────
+async function scrapeAukroCz(q, pageUrl, sourceLabel) {
+  const items = [];
+  const seen = new Set();
+
+  function addItem(title, price, link, img, bids = null, ending = '', location = '') {
+    title = (title || '').trim();
+    if (!title || title.length < 3) return;
+    const key = link || title;
+    if (seen.has(key)) return;
+    seen.add(key);
+    items.push({ title, price: price || '', link: link || '', img: img || '', lokalita: location || '', datum: '', bids, ending, source: sourceLabel });
+  }
+
+  function processOfferArray(arr) {
+    if (!Array.isArray(arr)) return;
+    arr.forEach(o => {
+      const title = o.itemName || o.name || o.title || o.offerName || o.offerTitle || '';
+      const priceObj = o.buyNowPrice || o.price || o.priceForBuyer || o.currentPrice || o.minimalPrice || {};
+      const priceVal = typeof priceObj === 'object' ? (priceObj.amount || priceObj.value || '') : priceObj;
+      const priceCurr = typeof priceObj === 'object' ? (priceObj.currency || 'Kč') : 'Kč';
+      const price = priceVal ? `${priceVal} ${priceCurr}` : '';
+
+      const id = o.itemId || o.id || o.offerId || '';
+      const seoUrl = o.seoUrl || (o.itemName || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const link = id ? `https://www.aukro.cz/auctions/${seoUrl}-${id}` : '';
+
+      const img = o.titleImageUrl || o.titleImage?.url || o.mainPhoto?.url
+                || o.thumbnail?.url || o.photos?.[0]?.url || o.images?.[0]?.url || '';
+
+      // Počet príhodení – buyersCountRelative (z debug výstupu)
+      const bids = o.buyersCountRelative !== undefined ? o.buyersCountRelative
+                 : o.biddersCount !== undefined ? o.biddersCount
+                 : o.bidCount !== undefined ? o.bidCount
+                 : null;
+
+      // Čas konca aukcie
+      const ending = o.endingTime || o.endTime || o.validUntil || o.expirationTime || '';
+      let endingFormatted = '';
+      if (ending) {
+        const d = new Date(ending);
+        const now = new Date();
+        const diffMs = d - now;
+        if (diffMs > 0) {
+          const diffH = Math.floor(diffMs / 3600000);
+          const diffD = Math.floor(diffH / 24);
+          if (diffD > 0) endingFormatted = `${diffD}d ${diffH % 24}h`;
+          else if (diffH > 0) endingFormatted = `${diffH}h`;
+          else endingFormatted = `${Math.floor(diffMs / 60000)}min`;
+        } else {
+          endingFormatted = 'ukončené';
+        }
+      }
+
+      addItem(title, price, link, img, bids, endingFormatted, o.location || '');
+    });
+  }
+
+  function findOffers(obj, depth) {
+    if (!obj || typeof obj !== 'object' || depth > 8) return;
+    if (Array.isArray(obj)) {
+      if (obj.length > 0 && (obj[0]?.itemName || obj[0]?.name || obj[0]?.title || obj[0]?.offerName)) {
+        processOfferArray(obj); return;
+      }
+      obj.forEach(v => findOffers(v, depth + 1)); return;
+    }
+    // Aukro používa 'content' ako hlavné pole s výsledkami
+    for (const k of ['content','items','offers','results','searchItems','offerList','list']) {
+      if (Array.isArray(obj[k]) && obj[k].length > 0) { processOfferArray(obj[k]); return; }
+    }
+    Object.values(obj).forEach(v => { if (v && typeof v === 'object') findOffers(v, depth + 1); });
+  }
+
+  const resp = await fetch(proxyUrl(pageUrl));
+  const html = await resp.text();
+
+  // Presný formát z debug:
+  // ...searchItemsCommon\u001cPARAMS\u001cBODY\u001cHEADERS":"{\"t\":1,\"b\":{...}}",...
+  // Kľúč v raw HTML obsahuje literal \u001c (6 znakov)
+  // Hodnota je escaped JSON string: "{\"t\":1,\"b\":{...}}"
+
+  const needle = 'searchItemsCommon';
+  let pos = 0;
+  while ((pos = html.indexOf(needle, pos)) !== -1) {
+    pos += needle.length;
+
+    const window3k = html.substring(pos, pos + 3000);
+
+    for (const p of ['":"{\\', '":"{"']) {
+      const idx = window3k.indexOf(p);
+      if (idx === -1 || idx > 2500) continue;
+
+      // Sme na pozícii p – za ": nasleduje " (začiatok escaped string hodnoty)
+      // Preskočíme ": a sme na úvodnej "
+      const strQuote = pos + idx + 2; // pozícia na " (úvodzovka hodnoty)
+
+      // Level 1: extrahujeme vonkajší escaped string (od strQuote+1)
+      // strQuote je na úvodnej " hodnoty (za :)
+      // Za touto " začína escaped JSON string
+      // Ale hodnota je: "{\\"t\\":1,...}" – teda za " nasleduje {\\"
+      // Level 1 extrakcia číta od strQuote+1 a odescapuje \\ → \, \" → "
+      // Výsledok outer = {"t":1,"b":{...}} – validný JSON!
+      // Problém: outer začína " ak strQuote ukazuje na PRED úvodnú "
+      // Oprava: ak outer začína {, parsujeme priamo; ak začína ", preskočíme
+
+      let outer = '';
+      let i = strQuote + 1; // začíname ZA úvodnou " hodnoty
+      let esc = false;
+      while (i < html.length && i < strQuote + 800000) {
+        const ch = html[i];
+        if (esc) {
+          if      (ch === '"')  outer += '"';
+          else if (ch === '\\') outer += '\\';
+          else if (ch === 'n')  outer += '\n';
+          else if (ch === 'r')  outer += '\r';
+          else if (ch === 't')  outer += '\t';
+          else if (ch === 'u' && i + 4 < html.length) {
+            const hex = html.substring(i + 1, i + 5);
+            if (/^[0-9a-fA-F]{4}$/.test(hex)) {
+              outer += String.fromCharCode(parseInt(hex, 16));
+              i += 4;
+            } else outer += 'u';
+          } else outer += ch;
+          esc = false; i++; continue;
+        }
+        if (ch === '\\') { esc = true; i++; continue; }
+        if (ch === '"') break;
+        outer += ch;
+        i++;
+      }
+
+      // Z debug: outer začína "{\"t\":1,... → JSON.parse(outer) vráti string {"t":1,...
+      // Potom JSON.parse(string) vráti objekt
+      let parsed = null;
+
+      // Pokus 1: outer začína " → je to JSON string → parse dá string → parse znova dá objekt
+      try {
+        const step1 = JSON.parse(outer); // → string: {"t":1,"b":{...}}
+        if (typeof step1 === 'string') parsed = JSON.parse(step1);
+        else parsed = step1;
+      } catch(e) {}
+
+      // Pokus 2: outer je priamo JSON objekt (nezačína ")
+      if (!parsed) {
+        try { parsed = JSON.parse(outer); } catch(e) {}
+      }
+
+      // Pokus 3: replace \" → " a parsovať (ak outer obsahuje escaped quotes)
+      if (!parsed) {
+        try {
+          const clean = outer.replace(/^"/,'').replace(/"$/,'')
+                             .replace(/\\"/g,'"').replace(/\\\\/g,'\\');
+          parsed = JSON.parse(clean);
+        } catch(e) {}
+      }
+
+      if (parsed) {
+        const body = parsed.b || parsed;
+        findOffers(body, 0);
+        if (items.length > 0) break;
+      }
+    }
+    if (items.length > 0) break;
+  }
+
+  return items.slice(0, 80);
+}
+
+// ── obrazyvaukci.cz scraping ──────────────────────────
+async function scrapeObrazyvaukci(q) {
+  var url = 'https://www.obrazyvaukci.cz/Vysledky/Index/0?p=1&term=' + encodeURIComponent(q) + '&ord=date';
+  var resp = await fetch(proxyUrl(url));
+  var html = await resp.text();
+  var parser = new DOMParser();
+  var doc = parser.parseFromString(html, 'text/html');
+  var items = [];
+
+  doc.querySelectorAll('.ova-list-item').forEach(function(item) {
+    var autorEl = item.querySelector('.ova-item-title a');
+    var nazovEl = item.querySelector('.ova-item-desc');
+    if (!autorEl) return;
+
+    var autor = autorEl.textContent.trim();
+    var nazovRaw = nazovEl ? nazovEl.textContent.trim() : '';
+    var nazov = nazovRaw.replace(/^\d+\.\s*/, '');
+
+    var vyvolavacia = '';
+    var vydrazeno = '';
+    var datum = '';
+
+    item.querySelectorAll('p').forEach(function(p) {
+      var t = p.textContent.trim();
+      if (t.indexOf('Vyvolávací cena') !== -1) {
+        var sp = p.querySelector('span');
+        vyvolavacia = sp ? sp.textContent.trim() : t.replace('Vyvolávací cena:', '').trim();
+      } else if (t.indexOf('Vydraženo za') !== -1) {
+        var st = p.querySelector('strong');
+        vydrazeno = st ? st.textContent.trim() : '';
+      } else if (t.indexOf('Dražba ukončena') !== -1) {
+        var st2 = p.querySelector('strong');
+        if (st2) datum = st2.textContent.trim().split(' ')[0];
+      }
+    });
+
+    var linkEl = item.querySelector('a.ova-btn-brown');
+    var href = linkEl ? linkEl.getAttribute('href') : '';
+    var link = href ? (href.startsWith('http') ? href : 'https://www.obrazyvaukci.cz' + href) : '';
+
+    var imgEl = item.querySelector('img');
+    var img = imgEl ? imgEl.getAttribute('src') : '';
+
+    if (autor) {
+      items.push({ autor, nazov, odhadCena: vyvolavacia, konecnaCena: vydrazeno, aukcia: datum, link, img, source: 'obrazyvaukci.cz' });
+    }
+  });
+  return items;
+}
+
+// ── DARTE biografie ───────────────────────────────────
+async function scrapeDarteBio(q) {
+  const url = 'https://www.dartesro.sk/?act=biografie';
   const resp = await fetch(proxyUrl(url));
   const html = await resp.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
-  const items = [];
-
-  doc.querySelectorAll('[class*="offer"], [class*="item"], article').forEach(el => {
-    const title = el.querySelector('h2,h3,[class*="title"],[class*="name"]')?.textContent?.trim();
-    if (!title || title.length < 3) return;
-    const priceEl = el.querySelector('[class*="price"],[class*="cena"]');
-    const price = priceEl?.textContent?.trim() || '';
-    const link = el.querySelector('a[href]')?.href || '';
-    const img = el.querySelector('img')?.src || '';
-    if (title) items.push({ title, price, link: link.startsWith('http') ? link : 'https://www.aukro.sk' + link, img, source: 'aukro.sk' });
+  const results = [];
+  const qLower = q.toLowerCase().trim();
+  doc.querySelectorAll('#table_bio tr').forEach(function(tr) {
+    var a = tr.querySelector('a[href*="act=autor"]');
+    if (!a) return;
+    var meno = a.textContent.trim();
+    if (meno.toLowerCase().indexOf(qLower) === -1) return;
+    var href = a.getAttribute('href') || '';
+    var fullLink = 'https://www.dartesro.sk/' + href;
+    var tds = tr.querySelectorAll('td');
+    var roky = tds.length >= 2 ? tds[1].textContent.trim() : '';
+    var idMatch = href.match(/id=(\d+)/);
+    var autorId = idMatch ? idMatch[1] : null;
+    results.push({ meno, roky, link: fullLink, autorId });
   });
-  return items;
+  return results;
 }
 
-// ── Zobrazenie výsledkov scrapingu ────────────────────
-function renderScrapedResults(items, containerId, type) {
-  const container = document.getElementById(containerId);
-  if (!items.length) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">Žiadne výsledky nenájdené.<br>Skús iné kľúčové slovo.</div></div>`;
+async function scrapeDarteAutorDetail(autorId) {
+  var url = 'https://www.dartesro.sk/?act=autor&id=' + autorId;
+  var resp = await fetch(proxyUrl(url));
+  var html = await resp.text();
+  var parser = new DOMParser();
+  var doc = parser.parseFromString(html, 'text/html');
+  var main = doc.querySelector('.col-sm-12.col-lg-8');
+  return main ? main.innerHTML : '';
+}
+
+async function searchDarteBio() {
+  var q = document.getElementById('auction-query').value.trim();
+  if (!q) { showToast('Zadaj meno autora'); return; }
+  var section = document.getElementById('darte-bio-section');
+  var resultsEl = document.getElementById('darte-bio-results');
+  section.style.display = 'block';
+  resultsEl.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted)">⏳ Hľadám v databáze dartesro.sk...</div>';
+  try {
+    var autori = await scrapeDarteBio(q);
+    if (!autori.length) {
+      resultsEl.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">Autor nebol nájdený v databáze dartesro.sk</div></div>';
+      return;
+    }
+    var html = '<div style="margin-bottom:0.8rem;font-size:0.78rem;color:var(--muted)">Nájdených <strong style="color:var(--gold)">' + autori.length + '</strong> autorov</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem">';
+    autori.forEach(function(a, i) {
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.7rem 1rem;cursor:pointer" onclick="loadDarteDetail(' + i + ')">';
+      html += '<div><div style="font-weight:600;font-size:0.88rem">' + a.meno + '</div>';
+      html += '<div style="font-size:0.72rem;color:var(--muted)">' + (a.roky || '–') + '</div></div>';
+      html += '<a href="' + a.link + '" target="_blank" onclick="event.stopPropagation()" style="color:var(--gold);font-size:0.78rem">↗</a>';
+      html += '</div>';
+    });
+    html += '</div>';
+    resultsEl.innerHTML = html;
+    window._darteAutori = autori;
+    if (autori.length === 1 && autori[0].autorId) loadDarteDetail(0);
+  } catch(e) {
+    resultsEl.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Chyba pri načítaní dartesro.sk</div></div>';
+  }
+}
+
+async function loadDarteDetail(idx) {
+  var autori = window._darteAutori;
+  if (!autori || !autori[idx]) return;
+  var a = autori[idx];
+  var section = document.getElementById('darte-detail-section');
+  var container = document.getElementById('darte-detail-container');
+  if (!container) return;
+  section.style.display = 'block';
+  container.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted)">⏳ Načítavam detail: ' + a.meno + '...</div>';
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  try {
+    var rawHtml = await scrapeDarteAutorDetail(a.autorId);
+    var clean = rawHtml
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/href="\//g, 'href="https://www.dartesro.sk/')
+      .replace(/src="\//g, 'src="https://www.dartesro.sk/');
+    container.innerHTML =
+      '<div style="background:var(--surface2);border:1.5px solid var(--border2);border-radius:16px;padding:1.2rem;margin-top:0.5rem">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">'
+      + '<div style="font-family:Playfair Display,serif;font-size:1.1rem;color:var(--gold2)">' + a.meno + '</div>'
+      + '<a href="' + a.link + '" target="_blank" style="font-size:0.78rem;color:var(--gold)">↗ Otvoriť na dartesro.sk</a>'
+      + '</div>'
+      + '<div style="font-size:0.82rem;line-height:1.7;color:var(--cream)">' + (clean || 'Detail sa nepodarilo načítať.') + '</div>'
+      + '</div>';
+  } catch(e) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>'
+      + '<div class="empty-text">Detail sa nepodarilo načítať.<br>'
+      + '<a href="' + a.link + '" target="_blank" style="color:var(--gold)">Otvoriť priamo ↗</a></div></div>';
+  }
+}
+
+// ── Vyhľadávanie s automatickým scrapingom ────────────
+async function openAuctions() {
+  const q = document.getElementById('auction-query').value.trim();
+  const rok = document.getElementById('auction-year').value;
+  if (!q) { showToast('Zadaj meno autora'); return; }
+
+  const btn = document.querySelector('#page-auctions .btn-open-all');
+  btn.textContent = '⏳ Načítavam výsledky...';
+  btn.disabled = true;
+
+  const resultsEl = document.getElementById('scrape-results-auction');
+  resultsEl.style.display = 'block';
+  resultsEl.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--muted)">⏳ Načítavam soga.sk + obrazyvaukci.cz...</div>`;
+
+  try {
+    const [sogaRes, ovaRes] = await Promise.allSettled([
+      scrapeSoga(q, rok),
+      scrapeObrazyvaukci(q)
+    ]);
+    const sogaItems = sogaRes.status === 'fulfilled' ? sogaRes.value : [];
+    const ovaItems  = ovaRes.status  === 'fulfilled' ? ovaRes.value  : [];
+    const allItems  = [...sogaItems, ...ovaItems];
+    renderScrapedResults(allItems, 'scrape-results-auction', 'auction');
+  } catch(e) {
+    resultsEl.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Chyba pri načítaní.<br>Skús znova alebo otvor stránky manuálne.</div></div>`;
+  }
+
+  btn.textContent = '🚀 Vyhľadať na soga.sk + biografie dartesro.sk';
+  btn.disabled = false;
+  searchDarteBio();
+}
+
+// ── openMarket – bazos.sk + aukro.cz (3 oddelené tabuľky) ──
+async function openMarket() {
+  const q = document.getElementById('market-query').value.trim();
+  if (!q) { showToast('Zadaj hľadané slovo'); return; }
+
+  const btn = document.querySelector('#page-market .btn-open-all');
+  btn.textContent = '⏳ Načítavam...';
+  btn.disabled = true;
+
+  const bazosEl        = document.getElementById('scrape-results-bazos');
+  const aukroEl        = document.getElementById('scrape-results-aukro');
+  const aukroAntiqueEl = document.getElementById('scrape-results-aukro-antique');
+
+  [bazosEl, aukroEl, aukroAntiqueEl].forEach(el => {
+    el.style.display = 'block';
+    el.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted)">⏳ Načítavam...</div>';
+  });
+
+  const [bazosRes, aukroRes, aukroAntiqueRes] = await Promise.allSettled([
+    scrapeBazos(q),
+    scrapeAukroCz(q, URLS.aukrocz(q),        'aukro.cz'),
+    scrapeAukroCz(q, URLS.aukroczantique(q),  'aukro.cz / Zberateľstvo'),
+  ]);
+
+  const bazosItems        = bazosRes.status        === 'fulfilled' ? bazosRes.value        : [];
+  const aukroItems        = aukroRes.status        === 'fulfilled' ? aukroRes.value        : [];
+  const aukroAntiqueItems = aukroAntiqueRes.status === 'fulfilled' ? aukroAntiqueRes.value : [];
+
+  renderMarketTable(bazosItems,        'scrape-results-bazos',         '🛒 bazos.sk',                  '#ffa040', 'rgba(255,140,0,0.3)',   URLS.bazos(q));
+  renderMarketTable(aukroItems,        'scrape-results-aukro',         '⚡ aukro.cz – Aukcie',          '#64b4ff', 'rgba(100,180,255,0.3)', URLS.aukrocz(q));
+  renderMarketTable(aukroAntiqueItems, 'scrape-results-aukro-antique', '🏺 aukro.cz – Zberateľstvo',   '#b48aff', 'rgba(180,138,255,0.3)', URLS.aukroczantique(q));
+
+  btn.textContent = '🚀 Načítať bazos.sk + aukro.cz';
+  btn.disabled = false;
+}
+
+function renderMarketTable(items, containerId, title, color, borderColor, fallbackUrl) {
+  const el = document.getElementById(containerId);
+  const count = items.length;
+  const isAukro = containerId.includes('aukro');
+
+  const header = `
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.8rem">
+      <span style="font-family:'Playfair Display',serif;font-size:1rem;color:${color}">${title}</span>
+      <span style="font-size:0.72rem;padding:0.2rem 0.6rem;border-radius:20px;background:var(--surface3);border:1px solid ${borderColor};color:${color}">${count} výsledkov</span>
+      ${count === 0 ? `<a href="${fallbackUrl}" target="_blank" style="font-size:0.72rem;color:${color};margin-left:0.3rem">otvoriť manuálne ↗</a>` : ''}
+    </div>`;
+
+  if (!count) {
+    el.innerHTML = header + `<div class="empty-state" style="padding:1rem"><div class="empty-icon" style="font-size:1.5rem">🔍</div><div class="empty-text">Žiadne výsledky</div></div>`;
     return;
   }
 
+  const rows = items.map(item => {
+    const srcClass = item.source === 'bazos.sk' ? 'source-bazos'
+                   : item.source === 'aukro.cz' ? 'source-aukro'
+                   : item.source === 'aukro.cz / Zberateľstvo' ? 'source-antique' : '';
+    const imgCell = item.img
+      ? `<img src="${item.img}" style="width:52px;height:40px;object-fit:cover;border-radius:6px" onerror="this.style.display='none'">`
+      : '<div style="width:52px;height:40px;background:var(--surface3);border-radius:6px;display:flex;align-items:center;justify-content:center">🖼️</div>';
+
+    if (isAukro) {
+      return `<tr>
+        <td>${imgCell}</td>
+        <td style="max-width:180px">
+          <div style="font-weight:500;font-size:0.82rem">${item.title}</div>
+        </td>
+        <td class="td-price" style="white-space:nowrap;font-size:0.82rem">${item.price || '–'}</td>
+        <td style="font-size:0.72rem;color:var(--muted);white-space:nowrap;text-align:center">
+          ${item.bids !== null && item.bids !== undefined
+            ? `<span style="background:var(--surface3);border-radius:8px;padding:0.15rem 0.4rem">${item.bids}×</span>`
+            : '–'}
+        </td>
+        <td style="font-size:0.72rem;color:var(--muted);white-space:nowrap">${item.lokalita || '–'}</td>
+        <td style="font-size:0.72rem;white-space:nowrap">
+          ${item.ending
+            ? `<span style="color:${item.ending === 'ukončené' ? 'var(--muted)' : (item.ending.includes('min') || (item.ending.includes('h') && !item.ending.includes('d'))) ? '#f59e0b' : 'var(--green)'}">${item.ending}</span>`
+            : '–'}
+        </td>
+        <td>${item.link ? `<a class="td-link" href="${item.link}" target="_blank">↗</a>` : '–'}</td>
+      </tr>`;
+    } else {
+      return `<tr>
+        <td>${imgCell}</td>
+        <td style="max-width:200px">
+          <div style="font-weight:500;font-size:0.82rem;margin-bottom:0.2rem">${item.title}</div>
+          ${item.popis ? `<div style="font-size:0.7rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px">${item.popis}</div>` : ''}
+        </td>
+        <td class="td-price" style="white-space:nowrap;font-size:0.82rem">${item.price || '–'}</td>
+        <td style="font-size:0.72rem;color:var(--muted);white-space:nowrap">${item.lokalita || '–'}</td>
+        <td style="font-size:0.72rem;color:var(--muted);white-space:nowrap">${item.datum || '–'}</td>
+        <td>${item.link ? `<a class="td-link" href="${item.link}" target="_blank">↗</a>` : '–'}</td>
+      </tr>`;
+    }
+  }).join('');
+
+  const aukroHead = `<th>Foto</th><th>Názov</th><th>Cena</th><th>Prihadzujú</th><th>Lokalita</th><th>Končí za</th><th>Detail</th>`;
+  const bazosHead = `<th>Foto</th><th>Názov</th><th>Cena</th><th>Lokalita</th><th>Dátum</th><th>Detail</th>`;
+
+  el.innerHTML = header + `
+    <div class="table-wrap">
+      <table>
+        <thead><tr>${isAukro ? aukroHead : bazosHead}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function openSingle(site) {
+  const isAuction = ['soga'].includes(site);
+  const q = document.getElementById(isAuction ? 'auction-query' : 'market-query').value.trim();
+  if (!q) { showToast('Najprv zadaj hľadané slovo'); return; }
+  const rok = isAuction ? document.getElementById('auction-year').value : '';
+  let url;
+  if (site === 'soga') url = URLS.soga(q, rok);
+  else if (site === 'aukrocz') url = URLS.aukrocz(q);
+  else if (site === 'aukroczantique') url = URLS.aukroczantique(q);
+  else url = URLS[site](q);
+  window.open(url, '_blank');
+}
+
+// ── DEBUG funkcia ─────────────────────────────────────
+async function debugAukro() {
+  const q = document.getElementById('market-query').value.trim() || 'benka';
+  const dbg = document.getElementById('debug-aukro');
+  dbg.style.display = 'block';
+  dbg.innerHTML = '<div style="color:var(--gold);margin-bottom:0.5rem">🔧 Testujem aukro.cz pre: <strong>' + q + '</strong></div>';
+
+  const tests = [
+    { label: 'HTML search stolicka', url: `https://aukro.cz/vysledky-vyhledavani?text=${encodeURIComponent(q)}&searchAll=true&subbrand=BAZAAR` },
+    { label: 'HTML search ANTIQUE',  url: `https://aukro.cz/vysledky-vyhledavani?text=${encodeURIComponent(q)}&searchAll=true&subbrand=ANTIQUE&subbrandExclusive=true` },
+  ];
+
+  // Najprv analyzujeme čo je v HTML stránke
+  dbg.innerHTML += `<div style="margin-top:0.8rem;color:var(--gold2)">▶ ANALÝZA HTML stránky (200 OK)</div>`;
+  try {
+    const htmlUrl = `https://aukro.cz/vysledky-vyhledavani?text=${encodeURIComponent(q)}&searchAll=true&subbrand=BAZAAR`;    const hr = await fetch(proxyUrl(htmlUrl));
+    const ht = await hr.text();
+    const hdoc = new DOMParser().parseFromString(ht, 'text/html');
+
+    const preloads = hdoc.querySelectorAll('link[rel="preload"][as="image"]');
+    dbg.innerHTML += `<div style="color:#4ade80">preload images: ${preloads.length}</div>`;
+    preloads.forEach(p => {
+      dbg.innerHTML += `<div style="color:var(--cream);opacity:0.7;font-size:0.62rem">${p.getAttribute('href')}</div>`;
+    });
+
+    const ldjson = hdoc.querySelectorAll('script[type="application/ld+json"]');
+    dbg.innerHTML += `<div style="color:#4ade80">LD+JSON bloky: ${ldjson.length}</div>`;
+    ldjson.forEach((s,i) => {
+      dbg.innerHTML += `<div style="color:var(--cream);opacity:0.7;white-space:pre-wrap">[${i}] ${s.textContent.substring(0,500).replace(/</g,'&lt;')}</div>`;
+    });
+
+    const scripts = hdoc.querySelectorAll('script:not([src])');
+    let dataScripts = 0;
+    scripts.forEach((s,i) => {
+      const t = s.textContent.trim();
+      if (!t.includes('aukCache')) return;
+      dataScripts++;
+      dbg.innerHTML += `<div style="color:#b48aff">Script s aukCache nájdený, dĺžka: ${t.length}</div>`;
+
+      // Ukáž ktoré API endpointy sú v aukCache
+      const patterns = ['offer','token'];
+      patterns.forEach(pat => {
+        const n1 = t.indexOf(`\\/backend-web\\/api\\/${pat}`);
+        const n2 = t.indexOf(`/backend-web/api/${pat}`);
+        const found = n1 !== -1 || n2 !== -1;
+        const pos = n1 !== -1 ? n1 : n2;
+        dbg.innerHTML += `<div style="color:${found?'#4ade80':'var(--muted)'}">  ${found?'✓':'✗'} /backend-web/api/${pat} ${found ? '@ pos '+pos : ''}</div>`;
+        if (found && pat === 'offer') {
+          // Ukáž 600 znakov PRED a 600 ZA pozíciou – vidíme celý kľúč aj začiatok hodnoty
+          const ctx = t.substring(Math.max(0,pos-100), pos+600);
+          dbg.innerHTML += `<div style="color:var(--cream);opacity:0.8;font-size:0.62rem;white-space:pre-wrap;word-break:break-all">${ctx.replace(/</g,'&lt;')}</div>`;
+
+          // Skúsime priamo extrahovať escaped hodnotu
+          const needleFull = 'offers\\/searchItemsCommon';
+          const posF = t.indexOf(needleFull);
+          if (posF !== -1) {
+            // Hľadáme :"{ za kľúčom
+            const after = t.substring(posF, posF + 3000);
+            const vm = after.indexOf(':"{"') !== -1 ? after.indexOf(':"{"') : after.indexOf(':"{');
+            if (vm !== -1) {
+              dbg.innerHTML += `<div style="color:#b48aff">Hodnota začína na offset ${vm} od needle</div>`;
+              const raw = after.substring(vm+2, vm+2+500);
+              dbg.innerHTML += `<div style="color:var(--cream);opacity:0.7;font-size:0.62rem;white-space:pre-wrap;word-break:break-all">${raw.replace(/</g,'&lt;')}</div>`;
+            }
+          }
+
+          // Nový prístup: hľadáme v script.textContent (kde prehliadač odescapoval \u001c)
+          // PRIAMY TEST PARSERA na textContent
+          const nd = 'searchItemsCommon';
+          let pp = 0; let found_val = false;
+          while ((pp = t.indexOf(nd, pp)) !== -1) {
+            pp += nd.length;
+            const win = t.substring(pp, pp + 3000);
+            for (const p2 of ['":"{\\', '":"{"', '":{\\', '":{']) {
+              const idx2 = win.indexOf(p2);
+              if (idx2 !== -1 && idx2 < 2500) {
+                const vStart = pp + idx2 + p2.indexOf('{');
+                let esc2 = ''; let ii = vStart; let escaping = false;
+                while (ii < t.length && ii < vStart + 500) {
+                  const c2 = t[ii];
+                  if (escaping) { if(c2==='"')esc2+='"';else if(c2==='\\')esc2+='\\';else esc2+=c2; escaping=false;ii++;continue; }
+                  if (c2==='\\'){escaping=true;ii++;continue;}
+                  if (c2==='"') break;
+                  esc2+=c2; ii++;
+                }
+                dbg.innerHTML += `<div style="color:#4ade80">✓ Pat '${p2.replace(/\\/g,'\\\\')}'@${idx2}: extracted(200)=${JSON.stringify(esc2.substring(0,200))}</div>`;
+
+                // Extrahuj CELÝ string (nie len 500 znakov) a testuj parse
+                let fullEsc = ''; let fii = vStart; let fescaping = false;
+                while (fii < t.length && fii < vStart + 2000000) {
+                  const fc = t[fii];
+                  if (fescaping) {
+                    if(fc==='"')fullEsc+='"';else if(fc==='\\')fullEsc+='\\';
+                    else if(fc==='n')fullEsc+='\n';else if(fc==='r')fullEsc+='\r';
+                    else if(fc==='t')fullEsc+='\t';
+                    else if(fc==='u'&&fii+4<t.length){const fh=t.substring(fii+1,fii+5);if(/^[0-9a-fA-F]{4}$/.test(fh)){fullEsc+=String.fromCharCode(parseInt(fh,16));fii+=4;}else fullEsc+='u';}
+                    else fullEsc+=fc;
+                    fescaping=false;fii++;continue;
+                  }
+                  if(fc==='\\'){fescaping=true;fii++;continue;}
+                  if(fc==='"')break;
+                  fullEsc+=fc;fii++;
+                }
+                dbg.innerHTML += `<div style="color:#b48aff">Celá dĺžka extrahovaného stringu: ${fullEsc.length}</div>`;
+                dbg.innerHTML += `<div style="color:var(--cream);opacity:0.7;font-size:0.62rem">Začiatok: ${JSON.stringify(fullEsc.substring(0,100))}</div>`;
+                dbg.innerHTML += `<div style="color:var(--cream);opacity:0.7;font-size:0.62rem">Koniec: ${JSON.stringify(fullEsc.substring(fullEsc.length-100))}</div>`;
+
+                let testParsed = null;
+                let parseErr = '';
+                try { testParsed = JSON.parse(fullEsc); } catch(e) { parseErr = e.message; }
+                if (!testParsed) {
+                  try { const s = JSON.parse(fullEsc); if(typeof s==='string') testParsed=JSON.parse(s); } catch(e) {}
+                }
+                if (!testParsed) {
+                  try { testParsed = JSON.parse(fullEsc.replace(/^"/,'').replace(/"$/,'').replace(/\\"/g,'"').replace(/\\\\/g,'\\')); } catch(e) {}
+                }
+                dbg.innerHTML += `<div style="color:${testParsed?'#4ade80':'#c0392b'}">${testParsed ? '✓ JSON parse OK, kľúče: '+Object.keys(testParsed).join(', ') : '✗ JSON parse FAILED: '+parseErr}</div>`;
+                if (testParsed?.b) {
+                  const bKeys = Object.keys(testParsed.b);
+                  dbg.innerHTML += `<div style="color:#64b4ff">b kľúče: ${bKeys.join(', ')}</div>`;
+                  bKeys.forEach(k => {
+                    if (Array.isArray(testParsed.b[k])) {
+                      dbg.innerHTML += `<div style="color:#4ade80">  b.${k}: pole[${testParsed.b[k].length}]${testParsed.b[k].length>0?', prvý: '+JSON.stringify(testParsed.b[k][0]).substring(0,150):''}</div>`;
+                    }
+                  });
+                  // Plný výpis prvého content itemu pre debug obrázkov
+                  if (testParsed.b.content?.length > 0) {
+                    dbg.innerHTML += `<div style="color:var(--gold2);margin-top:0.5rem">🖼️ Prvý content item (plný):</div>`;
+                    dbg.innerHTML += `<div style="color:var(--cream);opacity:0.8;font-size:0.62rem;white-space:pre-wrap;word-break:break-all">${JSON.stringify(testParsed.b.content[0], null, 2).substring(0,3000)}</div>`;
+                    // Hľadáme bid-related kľúče vo všetkých itemoch
+                    const bidKeys = new Set();
+                    testParsed.b.content.slice(0,5).forEach(item => {
+                      Object.keys(item).forEach(k => { if (k.toLowerCase().includes('bid') || k.toLowerCase().includes('pric') || k.toLowerCase().includes('count') || k.toLowerCase().includes('buyer')) bidKeys.add(k); });
+                    });
+                    dbg.innerHTML += `<div style="color:#64b4ff">Bid/price/count kľúče v content: ${[...bidKeys].join(', ')}</div>`;
+                  }
+                }
+                found_val = true; break;
+              }
+            }
+            if (found_val) break;
+          }
+          if (!found_val) {
+            dbg.innerHTML += `<div style="color:#c0392b">✗ Parser nenašiel hodnotu v textContent!</div>`;
+            // Ukáž raw okolie
+            const pp2 = t.indexOf('searchItemsCommon');
+            if (pp2 !== -1) {
+              const raw = t.substring(pp2 + 'searchItemsCommon'.length, pp2 + 'searchItemsCommon'.length + 200);
+              dbg.innerHTML += `<div style="color:var(--muted);font-size:0.62rem">Raw po needle: ${JSON.stringify(raw.substring(0,150))}</div>`;
+            }
+          }
+        }
+      });
+    });
+    dbg.innerHTML += `<div style="color:#4ade80">Relevantné inline scripty: ${dataScripts}</div>`;
+
+    const bodyText = hdoc.body?.textContent || '';
+    const priceMatches = bodyText.match(/\d[\d\s]*(?:Kč|CZK)/g);
+    dbg.innerHTML += `<div style="color:#4ade80">Ceny v body: ${priceMatches ? priceMatches.slice(0,10).join(' | ') : 'žiadne'}</div>`;
+    dbg.innerHTML += `<div style="color:var(--muted)">Dĺžka HTML: ${ht.length} znakov | body text: ${bodyText.trim().substring(0,200).replace(/</g,'&lt;')}</div>`;
+  } catch(e) {
+    dbg.innerHTML += `<div style="color:#c0392b">Chyba HTML analýzy: ${e.message}</div>`;
+  }
+
+  // API endpoint testy
+  for (const test of tests) {
+    dbg.innerHTML += `<div style="margin-top:0.8rem;color:var(--gold2)">▶ ${test.label}</div>`;
+    dbg.innerHTML += `<div style="color:var(--muted);font-size:0.62rem;margin-bottom:0.3rem">${test.url}</div>`;
+    try {
+      const resp = await fetch(proxyUrl(test.url));
+      const status = resp.status;
+      const ct = resp.headers.get('content-type') || '?';
+      const text = await resp.text();
+      const preview = text.substring(0, 300).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const color = status === 200 ? '#27ae60' : '#c0392b';
+      dbg.innerHTML += `<div style="color:${color}">HTTP ${status} | ${ct}</div>`;
+      dbg.innerHTML += `<div style="color:var(--cream);opacity:0.7;white-space:pre-wrap">${preview}</div>`;
+      try {
+        const json = JSON.parse(text);
+        const keys = Object.keys(json).join(', ');
+        dbg.innerHTML += `<div style="color:#64b4ff">✅ JSON – kľúče: ${keys}</div>`;
+        const arrays = Object.entries(json).filter(([k,v]) => Array.isArray(v));
+        arrays.forEach(([k,v]) => {
+          dbg.innerHTML += `<div style="color:#4ade80">  → "${k}": ${v.length} položiek</div>`;
+          if (v.length > 0) dbg.innerHTML += `<div style="color:var(--cream);opacity:0.6">     [0]: ${JSON.stringify(v[0]).substring(0,300)}</div>`;
+        });
+      } catch(e) {
+        dbg.innerHTML += `<div style="color:var(--muted)">⚠ Nie je JSON (${e.message})</div>`;
+      }
+    } catch(e) {
+      dbg.innerHTML += `<div style="color:#c0392b">❌ Chyba: ${e.message}</div>`;
+    }
+  }
+  dbg.innerHTML += `<div style="margin-top:1rem;color:var(--muted)">── koniec debug ──</div>`;
+}
+
+// ── Zobrazenie výsledkov scrapingu ────────────────────
+function renderScrapedResults(items, containerId, type, prefixHtml = '') {
+  const container = document.getElementById(containerId);
   const isAuction = type === 'auction';
 
+  if (!items.length) {
+    container.innerHTML = prefixHtml + `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">Žiadne výsledky nenájdené.<br>Skús iné kľúčové slovo.</div></div>`;
+    window['_scraped_' + type] = [];
+    return;
+  }
+
   if (isAuction) {
-    // Aukčná tabuľka so stĺpcami: Zdroj, Autor, Názov, Odh. cena, Kon. cena, Aukcia, Detail
-    container.innerHTML = `
-      <div style="margin-bottom:0.8rem;font-size:0.78rem;color:var(--muted)">Nájdených <strong style="color:var(--gold)">${items.length}</strong> výsledkov – kliknutím na ＋ uložíš záznam</div>
+    container.innerHTML = prefixHtml + `
+      <div style="margin-bottom:0.8rem;font-size:0.78rem;color:var(--muted)">Nájdených <strong style="color:var(--gold)">${items.length}</strong> výsledkov</div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -1041,11 +1538,11 @@ function renderScrapedResults(items, containerId, type) {
               <th>Zdroj</th>
               <th>Autor</th>
               <th>Názov diela</th>
-              <th>Odh. cena</th>
-              <th>Kon. cena</th>
-              <th>Aukcia</th>
+              <th>Vyvolávacia</th>
+              <th>Vydražené za</th>
+              <th>Stav</th>
+              <th>Dátum / Aukcia</th>
               <th>Detail</th>
-              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -1054,11 +1551,11 @@ function renderScrapedResults(items, containerId, type) {
                 <td><span class="td-source">${item.source}</span></td>
                 <td style="font-weight:500">${item.autor || item.title || '–'}</td>
                 <td>${item.nazov || '–'}</td>
-                <td class="td-price" style="white-space:nowrap;font-size:0.75rem">${item.odhadCena || item.price || '–'}</td>
-                <td class="td-price" style="white-space:nowrap;font-size:0.75rem">${item.konecnaCena || '–'}</td>
-                <td style="font-size:0.72rem;color:var(--muted)">${item.aukcia || '–'}</td>
+                <td style="font-size:0.75rem;color:var(--muted);white-space:nowrap">${item.odhadCena || item.price || '–'}</td>
+                <td class="td-price" style="white-space:nowrap;font-size:0.8rem">${item.konecnaCena || '–'}</td>
+                <td>${(function(){var s=item.status||'';var k=item.konecnaCena||'';if(!s){if(k==='Nevydražené')s='nevydraženo';else if(k.indexOf('Predaj:')===0)s='predaj';else if(k)s='vydraženo';}var c=s==='vydraženo'?'#27ae60':s==='nevydraženo'?'#c0392b':'#7a7060';return s?'<span style="font-size:0.68rem;padding:0.15rem 0.5rem;border-radius:6px;background:rgba(0,0,0,0.3);border:1px solid '+c+';color:'+c+'">'+s+'</span>':'–';})()}</td>
+                <td style="font-size:0.72rem;color:var(--muted);white-space:nowrap">${item.aukcia || '–'}</td>
                 <td>${item.link ? `<a class="td-link" href="${item.link}" target="_blank">↗</a>` : '–'}</td>
-                <td><button onclick="quickSave(${i}, '${type}')" style="background:var(--surface3);border:1px solid var(--border2);color:var(--gold);border-radius:8px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.8rem">＋</button></td>
               </tr>
             `).join('')}
           </tbody>
@@ -1066,26 +1563,42 @@ function renderScrapedResults(items, containerId, type) {
       </div>
     `;
   } else {
-    // Inzertné výsledky – kartičky ako predtým
-    container.innerHTML = `
-      <div style="margin-bottom:0.8rem;font-size:0.78rem;color:var(--muted)">Nájdených <strong style="color:var(--gold)">${items.length}</strong> výsledkov – kliknutím uložíš záznam</div>
-      <div style="display:flex;flex-direction:column;gap:0.5rem">
-        ${items.map((item, i) => `
-          <div style="display:flex;gap:0.8rem;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:0.7rem;cursor:pointer;transition:border-color 0.2s" 
-               onclick="quickSave(${i}, '${type}')" 
-               onmouseover="this.style.borderColor='var(--gold)'" 
-               onmouseout="this.style.borderColor='var(--border)'">
-            ${item.img ? `<img src="${item.img}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0" onerror="this.style.display='none'">` : '<div style="width:48px;height:48px;background:var(--surface3);border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem">🖼️</div>'}
-            <div style="flex:1;min-width:0">
-              <div style="font-size:0.82rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.title}</div>
-              <div style="display:flex;gap:0.5rem;margin-top:0.2rem;align-items:center">
-                <span style="font-size:0.78rem;color:var(--gold);font-weight:600">${item.price || '–'}</span>
-                <span style="font-size:0.68rem;color:var(--muted);background:var(--surface3);padding:0.1rem 0.4rem;border-radius:4px">${item.source}</span>
-              </div>
-            </div>
-            <div style="font-size:1rem;color:var(--muted);flex-shrink:0">＋</div>
-          </div>
-        `).join('')}
+    // Inzertné výsledky s farebným odlíšením zdroja
+    container.innerHTML = prefixHtml + `
+      <div style="margin-bottom:0.8rem;font-size:0.78rem;color:var(--muted)">Nájdených <strong style="color:var(--gold)">${items.length}</strong> výsledkov</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Zdroj</th>
+              <th>Obrázok</th>
+              <th>Názov</th>
+              <th>Cena</th>
+              <th>Lokalita</th>
+              <th>Dátum</th>
+              <th>Detail</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map((item, i) => {
+              // Farba tagu podľa zdroja
+              const srcClass = item.source === 'bazos.sk' ? 'source-bazos' : item.source === 'aukro.cz' ? 'source-aukro' : item.source === 'aukro.cz / Zberateľstvo' ? 'source-antique' : '';
+              return `
+              <tr>
+                <td><span class="td-source ${srcClass}">${item.source}</span></td>
+                <td>${item.img ? `<img src="${item.img}" style="width:52px;height:40px;object-fit:cover;border-radius:6px" onerror="this.style.display='none'">` : '<div style="width:52px;height:40px;background:var(--surface3);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1rem">🖼️</div>'}</td>
+                <td style="max-width:220px">
+                  <div style="font-weight:500;font-size:0.82rem;margin-bottom:0.2rem">${item.title}</div>
+                  ${item.popis ? `<div style="font-size:0.7rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">${item.popis}</div>` : ''}
+                </td>
+                <td class="td-price" style="white-space:nowrap;font-size:0.82rem">${item.price || '–'}</td>
+                <td style="font-size:0.72rem;color:var(--muted);white-space:nowrap">${item.lokalita || '–'}</td>
+                <td style="font-size:0.72rem;color:var(--muted);white-space:nowrap">${item.datum || '–'}</td>
+                <td>${item.link ? `<a class="td-link" href="${item.link}" target="_blank">↗</a>` : '–'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
       </div>
     `;
   }
@@ -1119,71 +1632,6 @@ function quickSave(idx, type) {
   showToast('✅ Uložené: ' + (item.autor || item.title || '').substring(0, 30));
 }
 
-// ── Vyhľadávanie s automatickým scrapingom ────────────
-async function openAuctions() {
-  const q = document.getElementById('auction-query').value.trim();
-  const rok = document.getElementById('auction-year').value;
-  if (!q) { showToast('Zadaj meno autora'); return; }
-
-  const btn = document.querySelector('#page-auctions .btn-open-all');
-  btn.textContent = '⏳ Načítavam výsledky...';
-  btn.disabled = true;
-
-  const resultsEl = document.getElementById('scrape-results-auction');
-  resultsEl.style.display = 'block';
-  resultsEl.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--muted)">⏳ Načítavam soga.sk${rok ? ' (rok ' + rok + ')' : ''}...</div>`;
-
-  try {
-    const sogaItems = await scrapeSoga(q, rok);
-    renderScrapedResults(sogaItems, 'scrape-results-auction', 'auction');
-  } catch(e) {
-    resultsEl.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Chyba pri načítaní.<br>Skús znova alebo otvor stránky manuálne.</div></div>`;
-  }
-
-  btn.textContent = '🚀 Otvoriť všetky aukčné stránky naraz';
-  btn.disabled = false;
-}
-
-async function openMarket() {
-  const q = document.getElementById('market-query').value.trim();
-  if (!q) { showToast('Zadaj hľadané slovo'); return; }
-
-  const btn = document.querySelector('#page-market .btn-open-all');
-  btn.textContent = '⏳ Načítavam výsledky...';
-  btn.disabled = true;
-
-  const resultsEl = document.getElementById('scrape-results-market');
-  resultsEl.style.display = 'block';
-  resultsEl.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--muted)">⏳ Načítavam bazos.sk, aukro.sk, ebay.com...</div>`;
-
-  try {
-    const [bazosItems, aukroItems] = await Promise.allSettled([
-      scrapeBazos(q),
-      scrapeAukro(q),
-    ]);
-
-    const all = [
-      ...(bazosItems.status === 'fulfilled' ? bazosItems.value : []),
-      ...(aukroItems.status === 'fulfilled' ? aukroItems.value : []),
-    ];
-
-    renderScrapedResults(all, 'scrape-results-market', 'market');
-  } catch(e) {
-    resultsEl.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Chyba pri načítaní.<br>Skús znova alebo otvor stránky manuálne.</div></div>`;
-  }
-
-  btn.textContent = '🚀 Otvoriť všetky inzertné stránky naraz';
-  btn.disabled = false;
-}
-
-function openSingle(site) {
-  const isAuction = ['soga'].includes(site);
-  const q = document.getElementById(isAuction ? 'auction-query' : 'market-query').value.trim();
-  if (!q) { showToast('Najprv zadaj hľadané slovo'); return; }
-  const rok = isAuction ? document.getElementById('auction-year').value : '';
-  window.open(site === 'soga' ? URLS.soga(q, rok) : URLS[site](q), '_blank');
-}
-
 // ── Formulár – pridanie záznamu ───────────────────────
 function toggleAddForm(type) {
   const f = document.getElementById('add-form-' + type);
@@ -1210,7 +1658,6 @@ function saveRecord(type) {
   records.push(record);
   saveRecords(records);
 
-  // Clear form
   ['title','price','date','source','link','note'].forEach(f => {
     document.getElementById(prefix + '-' + f).value = '';
   });
@@ -1275,9 +1722,7 @@ function renderAllTable() {
 
 function updateCounts() {
   const records = loadRecords();
-  const ac = records.filter(r => r.type === 'auction').length;
   const mc = records.filter(r => r.type === 'market').length;
-  document.getElementById('auction-count').textContent = ac + ' záznamov';
   document.getElementById('market-count').textContent = mc + ' záznamov';
 }
 
@@ -1291,7 +1736,6 @@ function renderStats() {
   document.getElementById('stat-auctions').textContent = ac;
   document.getElementById('stat-market').textContent = mc;
 
-  // Priemerná cena
   const prices = records
     .map(r => parseFloat((r.price || '').replace(/[^\d,.]/g,'').replace(',','.')))
     .filter(p => !isNaN(p) && p > 0);
@@ -1302,7 +1746,6 @@ function renderStats() {
     document.getElementById('stat-avg').textContent = '–';
   }
 
-  // Zdroje
   const sources = {};
   records.forEach(r => {
     const s = r.source || 'Neznámy';
@@ -1325,7 +1768,6 @@ function renderStats() {
     `).join('');
   }
 
-  // Top záznamy
   const topEl = document.getElementById('top-records');
   const withPrice = records
     .map(r => ({...r, numPrice: parseFloat((r.price||'').replace(/[^\d,.]/g,'').replace(',','.')) }))
@@ -1441,7 +1883,6 @@ renderTable('market');
 updateCounts();
 </script>
 <script>
-// ── PWA Service Worker registrácia ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
@@ -1450,13 +1891,10 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// ── PWA Install prompt ──
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  
-  // Zobrazíme toast s ponukou inštalácie
   setTimeout(() => {
     const t = document.getElementById('toast');
     t.innerHTML = '📱 Nainštalovať ako appku? <button onclick="installPWA()" style="background:var(--gold);color:#1a1408;border:none;border-radius:8px;padding:0.2rem 0.6rem;margin-left:0.5rem;cursor:pointer;font-weight:600">Áno</button>';
